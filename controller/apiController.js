@@ -84,7 +84,19 @@ const daftar = async (req, res) => {
     }
 };
 
+const pembeliTambahKeranjang = async (req, res) => {
+    try {
+
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
-    daftar
+    daftar, 
+    pembeliTambahKeranjang
 }
