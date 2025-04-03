@@ -3,12 +3,15 @@ var router = express.Router();
 
 const apiController = require('../controller/apiController');
 
-//GET
+//GET DEFAULT
 router.get('/login', apiController.login);
 
 
-//POST
+//POST DEFAULT
 router.post('/daftar', apiController.daftar);
+
+//POST PEMBELI
+router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
 
 //UPDATE

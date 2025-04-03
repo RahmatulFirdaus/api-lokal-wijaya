@@ -1,6 +1,17 @@
 const dbModel = require('../model/apiModel');
 const timeMoment = require('moment-timezone');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
+// Fungsi untuk menghasilkan token JWT
+const generateToken = (pengguna) => {
+    console.log("ID:", pengguna.id);
+    console.log("Username:", pengguna.username);
+    console.log("Role:", pengguna.role);
+    return jwt.sign(
+        { id: pengguna.id, username: pengguna.username, role: pengguna.role }
+        , process.env.JWT_SECRET, { expiresIn: '1h' });
+}
 
 // Fungsi untuk menangani login
 const login = async (req, res) => {
@@ -22,9 +33,20 @@ const login = async (req, res) => {
         if (user.password !== password) {
             return res.status(401).json({ message: 'Password salah' });
         }
+
+        const token = generateToken(user);
+
         // jika password benar, kita kembalikan data user
         return res.status(200).json({ message: 'Login berhasil',
-             data: data
+             data: {
+                id: user.id,
+                username: user.username,
+                nama: user.nama,
+                email: user.email,
+                no_telp: user.no_telp,
+                role: user.role,
+                token: token
+            }
             });
     } catch (error) {
         console.error(error);
