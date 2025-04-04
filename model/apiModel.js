@@ -1,15 +1,24 @@
 const dbPool = require('../config/database');
 const { post } = require('../routes/api');
 
-//Fungsi untuk mencari id_order yang kosong di item_order
-const cekIdOrderKosong = (id_order) => {
-    const SQLQuery = `SELECT * FROM item_order WHERE id_order IS NULL`;
-    return dbPool.query(SQLQuery, [id_order]);
+const postDataPembayaranPembeli= (id_order, nama_pengirim, bank_pengirim, bukti_transfer) => {
+    const SQLQuery = `INSERT INTO pembayaran (id_order, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_order, nama_pengirim, bank_pengirim, bukti_transfer]);
 }
 
-const pembeliOrderProduk = (id_pengguna, id_varian_produk, jumlah_order, harga) => {
-    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order, harga) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order, harga]);
+const updateItemOrder = (id_order, id_pengguna) => {
+    const SQLQuery = `UPDATE item_order SET id_order = ? WHERE id_pengguna = ? AND id_order IS NULL`;
+    return dbPool.query(SQLQuery, [id_order, id_pengguna]);
+}
+
+const cekIdOrderKosong = (id_order, id_pengguna) => {
+    const SQLQuery = `SELECT * FROM item_order WHERE id_pengguna = ? AND id_order IS NULL`;
+    return dbPool.query(SQLQuery, [id_order, id_pengguna]);
+}
+
+const postPembeliOrderProduk = (id_metode_pembayaran, total_harga, ) => {
+    const SQLQuery = `INSERT INTO order_produk (id_metode_pembayaran, total_harga, status) VALUES (?, ?, 'pending')`;
+    return dbPool.query(SQLQuery, [id_metode_pembayaran, total_harga]);
 }
 
 const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order, harga) => {
@@ -22,7 +31,7 @@ const getUsernameLogin = (username) => {
     return dbPool.query(SQLQuery, [username]);
 }
 
-const postDaftar = (username, password, nama, email, nomor_telp, role) => {
+const postDaftar = (username, password, nama, email, nomor_telp) => {
     const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role) VALUES (?, ?, ?, ?, ?, 'pembeli')`;
     return dbPool.query(SQLQuery, [username, password, nama, email, nomor_telp])
 }
@@ -38,5 +47,7 @@ module.exports = {
     postDaftar,
     validasiDaftar, 
     postPembeliTambahKeranjang,
-    cekIdOrderKosong
+    cekIdOrderKosong,
+    postPembeliOrderProduk,
+    updateItemOrder
  }

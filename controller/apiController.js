@@ -108,7 +108,32 @@ const pembeliTambahKeranjang = async (req, res) => {
 const pembeliOrderProduk = async (req, res) => {
     try {
         // Ambil data dari body request
-        
+        const {
+            id_pengguna,
+            id_metode_pembayaran,
+            nama_pengirim,
+            bank_pengirim,
+            bukti_transfer,
+            catatan_admin
+          } = req.body;
+
+        //mengecek id_order yang kosong di item_order
+        const [data] = await dbModel.cekIdOrderKosong(id_order);
+        if (data.length === 0) {
+            return res.status(401).json({ message: 'Tidak ada item order yang belum dibayar' });
+        }
+
+        const id_order = data[0].id_order;
+
+        // Simpan data ke tabel order_produk
+        await dbModel.postPembeliOrderProduk(id_metode_pembayaran, total_harga);
+
+        //update id_order di item_order
+        await dbModel.updateItemOrder(id_order, id_pengguna);
+
+        // Simpan data pembayaran ke tabel pembayaran
+        await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, bukti_transfer);
+        res.status(201).json({ message: 'Produk berhasil dipesan' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -118,5 +143,6 @@ const pembeliOrderProduk = async (req, res) => {
 module.exports = {
     login,
     daftar, 
-    pembeliTambahKeranjang
+    pembeliTambahKeranjang,
+    pembeliOrderProduk
 }
