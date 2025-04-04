@@ -84,11 +84,31 @@ const daftar = async (req, res) => {
     }
 };
 
+// Fungsi untuk menambahkan produk ke keranjang
 const pembeliTambahKeranjang = async (req, res) => {
     try {
+        // Ambil data dari body request
+        const { id_pengguna, id_varian_produk, jumlah_order, harga } = req.body;
 
+        // Validasi Pastikan semua field diisi
+        if (!id_pengguna || !id_varian_produk || !jumlah_order || !harga) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
 
+        // Simpan data ke keranjang
+        await dbModel.postPembeliTambahKeranjang(id_pengguna, id_varian_produk, jumlah_order, harga);
+        res.status(201).json({ message: 'Produk berhasil ditambahkan ke keranjang' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
+//Fungsi Order Produk Pembeli
+const pembeliOrderProduk = async (req, res) => {
+    try {
+        // Ambil data dari body request
+        
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });

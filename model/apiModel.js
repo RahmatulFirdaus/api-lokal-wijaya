@@ -1,8 +1,19 @@
 const dbPool = require('../config/database');
 const { post } = require('../routes/api');
 
+//Fungsi untuk mencari id_order yang kosong di item_order
+const cekIdOrderKosong = (id_order) => {
+    const SQLQuery = `SELECT * FROM item_order WHERE id_order IS NULL`;
+    return dbPool.query(SQLQuery, [id_order]);
+}
+
+const pembeliOrderProduk = (id_pengguna, id_varian_produk, jumlah_order, harga) => {
+    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order, harga) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order, harga]);
+}
+
 const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order, harga) => {
-    const SQLQuery = `INSERT INTO keranjang (id_pengguna, id_varian_produk, jumlah_order, harga) VALUES (?, ?, ?, ?)`;
+    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order, harga) VALUES (?, ?, ?, ?)`;
     return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order, harga]);
 }
 
@@ -21,9 +32,11 @@ const validasiDaftar = (username, email) => {
     return dbPool.query(SQLQuery, [username, email]);
 }
 
+
 module.exports = { 
     getUsernameLogin,
     postDaftar,
     validasiDaftar, 
-    postPembeliTambahKeranjang
+    postPembeliTambahKeranjang,
+    cekIdOrderKosong
  }

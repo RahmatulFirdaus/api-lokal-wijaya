@@ -12,6 +12,7 @@ router.post('/daftar', apiController.daftar);
 
 //POST PEMBELI
 router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
+router.post('/pembeliOrderProduk', apiController.pembeliOrderProduk);
 
 
 //UPDATE
