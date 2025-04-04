@@ -1,6 +1,12 @@
 const dbPool = require('../config/database');
 const { post } = require('../routes/api');
 
+const getPembeliRiwayatTransaksi = (id) => {
+    // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN order_produk ON pembayaran.id_order = order_produk.id WHERE order.id_pengguna = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const postDataPembayaranPembeli= (id_order, nama_pengirim, bank_pengirim, bukti_transfer) => {
     const SQLQuery = `INSERT INTO pembayaran (id_order, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
     return dbPool.query(SQLQuery, [id_order, nama_pengirim, bank_pengirim, bukti_transfer]);
@@ -50,5 +56,6 @@ module.exports = {
     cekIdOrderKosong,
     postPembeliOrderProduk,
     updateItemOrder, 
-    postDataPembayaranPembeli
+    postDataPembayaranPembeli, 
+    getPembeliRiwayatTransaksi
  }
