@@ -113,12 +113,12 @@ const pembeliOrderProduk = async (req, res) => {
             id_metode_pembayaran,
             nama_pengirim,
             bank_pengirim,
-            bukti_transfer,
-            catatan_admin
           } = req.body;
 
+        const bukti_transfer = req.file ? req.file.filename : null;
+
         //mengecek id_order yang kosong di item_order
-        const [data] = await dbModel.cekIdOrderKosong(id_order);
+        const [data] = await dbModel.cekIdOrderKosong(id_order, id_pengguna);
         if (data.length === 0) {
             return res.status(401).json({ message: 'Tidak ada item order yang belum dibayar' });
         }

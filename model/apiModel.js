@@ -49,5 +49,6 @@ module.exports = {
     postPembeliTambahKeranjang,
     cekIdOrderKosong,
     postPembeliOrderProduk,
-    updateItemOrder
+    updateItemOrder, 
+    postDataPembayaranPembeli
  }
