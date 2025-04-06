@@ -104,42 +104,52 @@ const pembeliTambahKeranjang = async (req, res) => {
     }
 }
 
-//Fungsi Order Produk Pembeli
+// Fungsi untuk menangani proses pemesanan produk oleh pembeli
 const pembeliOrderProduk = async (req, res) => {
     try {
         // Ambil data dari body request
         const {
-            id_pengguna,
-            id_metode_pembayaran,
-            total_harga,
-            nama_pengirim,
-            bank_pengirim
-          } = req.body;
+            id_pengguna, // ID pengguna yang melakukan pemesanan
+            id_metode_pembayaran, // ID metode pembayaran yang dipilih
+            total_harga, // Total harga pesanan
+            nama_pengirim, // Nama pengirim untuk pembayaran
+            bank_pengirim // Bank pengirim untuk pembayaran
+        } = req.body;
 
+        // Ambil nama file bukti transfer jika ada file yang diunggah
         const bukti_transfer = req.file ? req.file.filename : null;
 
-        //mengecek id_order yang kosong di item_order
+        // Mengecek apakah ada item order yang belum dibayar untuk pengguna
         const [data] = await dbModel.cekIdOrderKosong(id_pengguna);
         if (data.length === 0) {
+            // Jika tidak ada item order yang belum dibayar, kembalikan respons error
             return res.status(401).json({ message: 'Tidak ada item order yang belum dibayar' });
         }
 
-        const id_order = data[0].id_order;
-        console.log("ID Order:", id_order);
         // Simpan data ke tabel order_produk
-        await dbModel.postPembeliOrderProduk(id_metode_pembayaran, total_harga);
+        const [resultOrder] = await dbModel.postPembeliOrderProduk(id_metode_pembayaran, total_harga);
 
-        //update id_order di item_order
+        console.log("Berhasil Simpan Order Produk");
+
+        // Ambil ID order yang baru saja disimpan
+        const id_order = resultOrder.insertId;
+
+        // Update ID order di tabel item_order untuk menghubungkan item dengan order
         await dbModel.updateItemOrder(id_order, id_pengguna);
+
+        console.log("Berhasil Update Order Produk");
 
         // Simpan data pembayaran ke tabel pembayaran
         await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, bukti_transfer);
+
+        // Kembalikan respons sukses
         res.status(201).json({ message: 'Produk berhasil dipesan' });
     } catch (error) {
+        // Tangani error dan kembalikan respons error
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
 module.exports = {
     login,

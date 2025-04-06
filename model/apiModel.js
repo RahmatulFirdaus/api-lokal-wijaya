@@ -9,10 +9,10 @@ const getPembeliRiwayatTransaksi = (id) => {
 
 const postDataPembayaranPembeli= (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) => {
     const SQLQuery = `INSERT INTO pembayaran (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_order, nama_pengirim, bank_pengirim, bukti_transfer]);
+    return dbPool.query(SQLQuery, [id_orderan, nama_pengirim, bank_pengirim, bukti_transfer]);
 }
 
-const updateItemOrder = (id_order, id_pengguna) => {
+const updateItemOrder = (id_orderan, id_pengguna) => {
     const SQLQuery = `UPDATE item_order SET id_orderan = ? WHERE id_pengguna = ? AND id_orderan IS NULL`;
     return dbPool.query(SQLQuery, [id_orderan, id_pengguna]);
 }
