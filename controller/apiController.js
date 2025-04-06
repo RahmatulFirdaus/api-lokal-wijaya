@@ -151,9 +151,30 @@ const pembeliOrderProduk = async (req, res) => {
     }
 };
 
+// Fungsi untuk mengambil riwayat transaksi pembeli berdasarkan ID pengguna
+const pembeliRiwayatTransaksi = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPembeliRiwayatTransaksi(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+        }
+
+        // Mengembalikan data riwayat transaksi
+        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
     pembeliTambahKeranjang,
-    pembeliOrderProduk
+    pembeliOrderProduk, 
+    pembeliRiwayatTransaksi
 }

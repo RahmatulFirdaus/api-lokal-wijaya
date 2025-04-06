@@ -13,7 +13,7 @@ router.post('/daftar', apiController.daftar);
 
 //GET PEMBELI
 
-// router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
+router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
 
 //POST PEMBELI
 

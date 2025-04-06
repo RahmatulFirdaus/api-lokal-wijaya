@@ -3,7 +3,7 @@ const { post } = require('../routes/api');
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id WHERE orderan.id_pengguna = ?`;
+    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE orderan.id_pengguna = ?`;
     return dbPool.query(SQLQuery, [id]);
 }
 
