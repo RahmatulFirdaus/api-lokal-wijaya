@@ -111,20 +111,21 @@ const pembeliOrderProduk = async (req, res) => {
         const {
             id_pengguna,
             id_metode_pembayaran,
+            total_harga,
             nama_pengirim,
-            bank_pengirim,
+            bank_pengirim
           } = req.body;
 
         const bukti_transfer = req.file ? req.file.filename : null;
 
         //mengecek id_order yang kosong di item_order
-        const [data] = await dbModel.cekIdOrderKosong(id_order, id_pengguna);
+        const [data] = await dbModel.cekIdOrderKosong(id_pengguna);
         if (data.length === 0) {
             return res.status(401).json({ message: 'Tidak ada item order yang belum dibayar' });
         }
 
         const id_order = data[0].id_order;
-
+        console.log("ID Order:", id_order);
         // Simpan data ke tabel order_produk
         await dbModel.postPembeliOrderProduk(id_metode_pembayaran, total_harga);
 

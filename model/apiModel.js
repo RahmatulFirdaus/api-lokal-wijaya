@@ -3,27 +3,27 @@ const { post } = require('../routes/api');
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN order_produk ON pembayaran.id_order = order_produk.id WHERE order.id_pengguna = ?`;
+    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id WHERE orderan.id_pengguna = ?`;
     return dbPool.query(SQLQuery, [id]);
 }
 
-const postDataPembayaranPembeli= (id_order, nama_pengirim, bank_pengirim, bukti_transfer) => {
-    const SQLQuery = `INSERT INTO pembayaran (id_order, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
+const postDataPembayaranPembeli= (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) => {
+    const SQLQuery = `INSERT INTO pembayaran (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
     return dbPool.query(SQLQuery, [id_order, nama_pengirim, bank_pengirim, bukti_transfer]);
 }
 
 const updateItemOrder = (id_order, id_pengguna) => {
-    const SQLQuery = `UPDATE item_order SET id_order = ? WHERE id_pengguna = ? AND id_order IS NULL`;
-    return dbPool.query(SQLQuery, [id_order, id_pengguna]);
+    const SQLQuery = `UPDATE item_order SET id_orderan = ? WHERE id_pengguna = ? AND id_orderan IS NULL`;
+    return dbPool.query(SQLQuery, [id_orderan, id_pengguna]);
 }
 
-const cekIdOrderKosong = (id_order, id_pengguna) => {
-    const SQLQuery = `SELECT * FROM item_order WHERE id_pengguna = ? AND id_order IS NULL`;
-    return dbPool.query(SQLQuery, [id_order, id_pengguna]);
+const cekIdOrderKosong = (id_pengguna) => {
+    const SQLQuery = `SELECT * FROM item_order WHERE id_pengguna = ? AND id_orderan IS NULL`;
+    return dbPool.query(SQLQuery, [id_pengguna]);
 }
 
-const postPembeliOrderProduk = (id_metode_pembayaran, total_harga, ) => {
-    const SQLQuery = `INSERT INTO order_produk (id_metode_pembayaran, total_harga, status) VALUES (?, ?, 'pending')`;
+const postPembeliOrderProduk = (id_metode_pembayaran, total_harga) => {
+    const SQLQuery = `INSERT INTO orderan (id_metode_pembayaran, total_harga, status) VALUES (?, ?, 'pending')`;
     return dbPool.query(SQLQuery, [id_metode_pembayaran, total_harga]);
 }
 

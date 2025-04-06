@@ -12,12 +12,15 @@ router.get('/login', apiController.login);
 router.post('/daftar', apiController.daftar);
 
 //GET PEMBELI
-router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
+
+// router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
 
 //POST PEMBELI
-router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
-router.post('/pembeliOrderProduk', apiController.pembeliOrderProduk);
 
+
+
+
+router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
 
 //UPDATE
@@ -28,7 +31,7 @@ router.post('/pembeliOrderProduk', apiController.pembeliOrderProduk);
 
 
 
-//UPLOAD
-router.post('/upload', upload.single('bukti_transfer'), apiController.uploadBuktiTransfer);
+//UPLOAD / POST PEMBELI
+router.post('/upload', upload.single('bukti_transfer'), apiController.pembeliOrderProduk);
 
 module.exports = router;
