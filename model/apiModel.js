@@ -1,9 +1,15 @@
 const dbPool = require('../config/database');
-const { post } = require('../routes/api');
+const { post, get } = require('../routes/api');
+
+const getPembeliRiwayatTransaksiDetail = (id) => {
+    // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
+    const SQLQuery = `SELECT item_order.id_varian_produk, item_order.jumlah_order, item_order.harga, varian_produk.warna, varian_produk.ukuran, produk.nama FROM item_order JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id WHERE item_order.id_pengguna = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, order.status, order.catatan_admin FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE orderan.id_pengguna = ?`;
+    const SQLQuery = `SELECT pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, orderan.status, orderan.catatan_admin FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE item_order.id_pengguna = ?`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -57,5 +63,6 @@ module.exports = {
     postPembeliOrderProduk,
     updateItemOrder, 
     postDataPembayaranPembeli, 
-    getPembeliRiwayatTransaksi
+    getPembeliRiwayatTransaksi,
+    getPembeliRiwayatTransaksiDetail
  }

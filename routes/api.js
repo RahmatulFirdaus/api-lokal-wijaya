@@ -14,6 +14,7 @@ router.post('/daftar', apiController.daftar);
 //GET PEMBELI
 
 router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
+router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTransaksiDetail);
 
 //POST PEMBELI
 
