@@ -90,6 +90,11 @@ const pembeliTambahKeranjang = async (req, res) => {
         // Ambil data dari body request
         const { id_pengguna, id_varian_produk, jumlah_order, harga } = req.body;
 
+        console.log("ID Pengguna:", id_pengguna);
+        console.log("ID Varian Produk:", id_varian_produk); 
+        console.log("Jumlah Order:", jumlah_order);
+        console.log("Harga:", harga);
+
         // Validasi Pastikan semua field diisi
         if (!id_pengguna || !id_varian_produk || !jumlah_order || !harga) {
             return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
@@ -171,10 +176,31 @@ const pembeliRiwayatTransaksi = async (req, res) => {
     }
 }
 
+// Fungsi untuk mengambil detail riwayat transaksi pembeli berdasarkan ID Orderan
+const pembeliRiwayatTransaksiDetail = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPembeliRiwayatTransaksiDetail(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+        }
+
+        // Mengembalikan data riwayat transaksi
+        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
     pembeliTambahKeranjang,
     pembeliOrderProduk, 
-    pembeliRiwayatTransaksi
+    pembeliRiwayatTransaksi,
+    pembeliRiwayatTransaksiDetail
 }
