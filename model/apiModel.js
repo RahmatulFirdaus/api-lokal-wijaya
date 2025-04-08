@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getPembeliUlasanProduk = (id) => {
+    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, item_order.harga FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const getPembeliRiwayatTransaksiDetail = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
     const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, item_order.harga FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
@@ -64,5 +69,6 @@ module.exports = {
     updateItemOrder, 
     postDataPembayaranPembeli, 
     getPembeliRiwayatTransaksi,
-    getPembeliRiwayatTransaksiDetail
+    getPembeliRiwayatTransaksiDetail,
+    getPembeliUlasanProduk,
  }

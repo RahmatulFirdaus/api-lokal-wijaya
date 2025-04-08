@@ -17,7 +17,7 @@ router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi
 
 //id diisi dengan id_orderan
 router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTransaksiDetail);
-// router.get('/pembeliUlasanProduk', apiController.pembeliUlasanProduk);
+router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 
 //POST PEMBELI
 

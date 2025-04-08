@@ -196,11 +196,33 @@ const pembeliRiwayatTransaksiDetail = async (req, res) => {
     }
 }
 
+const pembeliUlasanProduk = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPembeliUlasanProduk(id);
+
+        console.log("Data:", data);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
+        }
+
+        // Mengembalikan data riwayat transaksi
+        return res.status(200).json({ message: 'Transaksi ditemukan', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
     pembeliTambahKeranjang,
     pembeliOrderProduk, 
     pembeliRiwayatTransaksi,
-    pembeliRiwayatTransaksiDetail
+    pembeliRiwayatTransaksiDetail,
+    pembeliUlasanProduk
 }
