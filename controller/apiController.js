@@ -289,6 +289,25 @@ const getPengirimanData = async (req, res) => {
     }
 }
 
+// Fungsi untuk mengupdate profile pembeli
+const pembeliProfile = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { password, nama, email, nomor_telp } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!password || !nama || !email || !nomor_telp) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateProfile(id, password, nama, email, nomor_telp);
+        res.status(200).json({ message: 'Profile berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
 module.exports = {
     login,
     daftar, 
@@ -299,5 +318,6 @@ module.exports = {
     pembeliUlasanProduk, 
     pembeliTambahKomentar, 
     pembeliFaktur,
-    getPengirimanData
+    getPengirimanData,
+    pembeliProfile
 }

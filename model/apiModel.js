@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateProfile = (id, password, nama, email, nomor_telp) => {
+    const SQLQuery = `UPDATE pengguna SET password = ?, nama = ?, email = ?, nomor_telp = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [password, nama, email, nomor_telp, id]);
+}
+
 const getPengiriman = (id_orderan) => {
     const SQLQuery = `SELECT * FROM pengiriman WHERE pengiriman.id_orderan = ?`;
     return dbPool.query(SQLQuery, [id_orderan]);
@@ -95,5 +100,6 @@ module.exports = {
     postPembeliTambahKomentar,
     postFakturPembeli, 
     getFakturPembeli,
-    getPengiriman
+    getPengiriman,
+    updateProfile
  }

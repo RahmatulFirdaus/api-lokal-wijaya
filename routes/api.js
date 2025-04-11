@@ -33,6 +33,9 @@ router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
 //UPDATE
 
+//UPDATE PEMBELI
+router.patch('/pembeliProfile/:id', apiController.pembeliProfile);
+
 
 
 //DELETE
