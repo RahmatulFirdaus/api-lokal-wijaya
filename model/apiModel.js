@@ -1,11 +1,25 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
-const updateProfile = (id, password, nama, email, nomor_telp) => {
-    const SQLQuery = `UPDATE pengguna SET password = ?, nama = ?, email = ?, nomor_telp = ? WHERE id = ?`;
-    return dbPool.query(SQLQuery, [password, nama, email, nomor_telp, id]);
+const updateAkunPembeliNama = (id, nama) => {
+    const SQLQuery = `UPDATE pengguna SET nama = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nama, id]);
 }
 
+const updateAkunPembeliEmail = (id, email) => {
+    const SQLQuery = `UPDATE pengguna SET email = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [email, id]);
+}
+
+const updateAkunPembeliNomorTelepon = (id, nomor_telp) => {
+    const SQLQuery = `UPDATE pengguna SET nomor_telp = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nomor_telp, id]);
+}
+
+const updateAkunPembeliPassword = (id, password) => {
+    const SQLQuery = `UPDATE pengguna SET password = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [password, id]);
+}   
 const getPengiriman = (id_orderan) => {
     const SQLQuery = `SELECT * FROM pengiriman WHERE pengiriman.id_orderan = ?`;
     return dbPool.query(SQLQuery, [id_orderan]);
@@ -101,5 +115,8 @@ module.exports = {
     postFakturPembeli, 
     getFakturPembeli,
     getPengiriman,
-    updateProfile
+    updateAkunPembeliNama,
+    updateAkunPembeliEmail,
+    updateAkunPembeliNomorTelepon,
+    updateAkunPembeliPassword
  }

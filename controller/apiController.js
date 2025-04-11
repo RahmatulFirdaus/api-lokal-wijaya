@@ -289,20 +289,80 @@ const getPengirimanData = async (req, res) => {
     }
 }
 
-// Fungsi untuk mengupdate profile pembeli
-const pembeliProfile = async (req, res) => {
+// Fungsi untuk menangani pembeli yang ingin mengupdate profile password
+const pembeliProfilePassword = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari parameter URL
-        const { password, nama, email, nomor_telp } = req.body; // Mengambil data dari body request
+        const { password } = req.body; // Mengambil password dari body request
 
         // Validasi Pastikan semua field diisi
-        if (!password || !nama || !email || !nomor_telp) {
+        if (!password) {
             return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
-        await dbModel.updateProfile(id, password, nama, email, nomor_telp);
-        res.status(200).json({ message: 'Profile berhasil diupdate' });
+        await dbModel.updateAkunPembeliPassword(id, password);
+        res.status(200).json({ message: 'Password berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// Fungsi untuk menangani pembeli yang ingin mengupdate profile nama
+const pembeliProfileNama = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { nama } = req.body; // Mengambil nama dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!nama) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAkunPembeliNama(id, nama);
+        res.status(200).json({ message: 'Nama berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// Fungsi untuk menangani pembeli yang ingin mengupdate profile nomor telepon
+const pembeliProfileNomorTelepon = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { nomor_telp } = req.body; // Mengambil nomor telepon dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!nomor_telp) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAkunPembeliNomorTelepon(id, nomor_telp);
+        res.status(200).json({ message: 'Nomor telepon berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// Fungsi untuk menangani pembeli yang ingin mengupdate profile email
+const pembeliProfileEmail = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { email } = req.body; // Mengambil email dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!email) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAkunPembeliEmail(id, email);
+        res.status(200).json({ message: 'Email berhasil diupdate' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -319,5 +379,8 @@ module.exports = {
     pembeliTambahKomentar, 
     pembeliFaktur,
     getPengirimanData,
-    pembeliProfile
+    pembeliProfilePassword,
+    pembeliProfileNama,
+    pembeliProfileNomorTelepon,
+    pembeliProfileEmail
 }

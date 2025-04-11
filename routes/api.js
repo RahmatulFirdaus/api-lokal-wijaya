@@ -34,7 +34,11 @@ router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 //UPDATE
 
 //UPDATE PEMBELI
-router.patch('/pembeliProfile/:id', apiController.pembeliProfile);
+router.patch('/pembeliUpdateProfilePassword/:id', apiController.pembeliProfilePassword);
+router.patch('/pembeliUpdateProfileNama/:id', apiController.pembeliProfileNama);
+router.patch('/pembeliUpdateProfileNomorTelepon/:id', apiController.pembeliProfileNomorTelepon);
+router.patch('/pembeliUpdateProfileEmail/:id', apiController.pembeliProfileEmail);
+
 
 
 
