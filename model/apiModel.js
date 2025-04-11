@@ -1,6 +1,12 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getFakturPembeli = (id_orderan) => {
+    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama, item_order.harga, item_order.jumlah_order, produk.nama, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id WHERE orderan.id = ?;
+`;
+    return dbPool.query(SQLQuery, [id_orderan]);
+}
+
 const postFakturPembeli = (id_orderan, nomor_faktur) => {
     const SQLQuery = `INSERT INTO faktur (nomor_faktur, id_orderan) VALUES (?, ?)`;
     return dbPool.query(SQLQuery, [nomor_faktur, id_orderan]);
@@ -12,7 +18,7 @@ const postPembeliTambahKomentar = (id_produk, id_pengguna, rating, komentar) => 
 }
 
 const getPembeliUlasanProduk = (id) => {
-    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, item_order.harga FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, item_order.harga, produk.id AS id_produk FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -24,7 +30,7 @@ const getPembeliRiwayatTransaksiDetail = (id) => {
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-    const SQLQuery = `SELECT MIN(pembayaran.nama_pengirim) AS nama_pengirim, MIN(pembayaran.bank_pengirim) AS bank_pengirim, pembayaran.tanggal_transfer, MIN(orderan.status) AS status, MIN(orderan.catatan_admin) AS catatan_admin, MIN(orderan.id) AS id FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE item_order.id_pengguna = ? GROUP BY pembayaran.tanggal_transfer`;
+    const SQLQuery = `SELECT MIN(pembayaran.nama_pengirim) AS nama_pengirim, MIN(pembayaran.bank_pengirim) AS bank_pengirim, pembayaran.tanggal_transfer, MIN(orderan.status) AS status, MIN(orderan.catatan_admin) AS catatan_admin, MIN(orderan.id) AS id_orderan FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE item_order.id_pengguna = ? GROUP BY pembayaran.tanggal_transfer`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -82,5 +88,6 @@ module.exports = {
     getPembeliRiwayatTransaksiDetail,
     getPembeliUlasanProduk,
     postPembeliTambahKomentar,
-    postFakturPembeli
+    postFakturPembeli, 
+    getFakturPembeli
  }

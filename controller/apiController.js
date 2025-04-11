@@ -247,6 +247,25 @@ const pembeliTambahKomentar = async (req, res) => {
     }
 }
 
+const pembeliFaktur = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getFakturPembeli(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Faktur tidak ditemukan' });
+        }
+
+        // Mengembalikan data riwayat transaksi
+        return res.status(200).json({ message: 'Faktur berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -255,5 +274,6 @@ module.exports = {
     pembeliRiwayatTransaksi,
     pembeliRiwayatTransaksiDetail,
     pembeliUlasanProduk, 
-    pembeliTambahKomentar
+    pembeliTambahKomentar, 
+    pembeliFaktur
 }
