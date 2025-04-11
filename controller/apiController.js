@@ -266,6 +266,29 @@ const pembeliFaktur = async (req, res) => {
     }
 }
 
+const getPengirimanData = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+
+    console.log("ID Pengiriman:", id);  
+        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPengiriman(id);
+
+        console.log("Data Pengiriman:", data);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+        }
+
+        // Mengembalikan data riwayat transaksi
+        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -275,5 +298,6 @@ module.exports = {
     pembeliRiwayatTransaksiDetail,
     pembeliUlasanProduk, 
     pembeliTambahKomentar, 
-    pembeliFaktur
+    pembeliFaktur,
+    getPengirimanData
 }

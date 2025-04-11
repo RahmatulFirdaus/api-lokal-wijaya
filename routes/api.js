@@ -15,10 +15,13 @@ router.post('/daftar', apiController.daftar);
 
 router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
 
+
 //id diisi dengan id_orderan
 router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTransaksiDetail);
 router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 router.get('/pembeliFaktur/:id', apiController.pembeliFaktur);
+router.get('/pengiriman/:id', apiController.getPengirimanData);
+
 
 //POST PEMBELI
 router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
