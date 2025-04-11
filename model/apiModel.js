@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const postFakturPembeli = (id_orderan, nomor_faktur) => {
+    const SQLQuery = `INSERT INTO faktur (nomor_faktur, id_orderan) VALUES (?, ?)`;
+    return dbPool.query(SQLQuery, [nomor_faktur, id_orderan]);
+}
+
+const postPembeliTambahKomentar = (id_produk, id_pengguna, rating, komentar) => {
+    const SQLQuery = `INSERT INTO komentar (id_produk, id_pengguna, rating, komentar) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, id_pengguna, rating, komentar]);
+}
+
 const getPembeliUlasanProduk = (id) => {
     const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, item_order.harga FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
@@ -71,4 +81,6 @@ module.exports = {
     getPembeliRiwayatTransaksi,
     getPembeliRiwayatTransaksiDetail,
     getPembeliUlasanProduk,
+    postPembeliTambahKomentar,
+    postFakturPembeli
  }

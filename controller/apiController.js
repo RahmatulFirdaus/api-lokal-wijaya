@@ -109,6 +109,14 @@ const pembeliTambahKeranjang = async (req, res) => {
     }
 }
 
+// Fungsi untuk menghasilkan nomor faktur
+// Format: FAK-YYYYMMDDHHmmss-RANDOM_NUMBER
+const generateNomorFaktur = () => {
+    const tanggal = timeMoment().tz('Asia/Jakarta').format('YYYYMMDDHHmmss');
+    const randomAngka = Math.floor(1000 + Math.random() * 9000); // 4 digit acak
+    return `FAK-${tanggal}-${randomAngka}`;
+};
+
 // Fungsi untuk menangani proses pemesanan produk oleh pembeli
 const pembeliOrderProduk = async (req, res) => {
     try {
@@ -146,6 +154,9 @@ const pembeliOrderProduk = async (req, res) => {
 
         // Simpan data pembayaran ke tabel pembayaran
         await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, bukti_transfer);
+
+        const nomor_faktur = generateNomorFaktur();
+        await dbModel.postFakturPembeli(id_order, nomor_faktur);
 
         // Kembalikan respons sukses
         res.status(201).json({ message: 'Produk berhasil dipesan' });
@@ -217,6 +228,25 @@ const pembeliUlasanProduk = async (req, res) => {
     }
 }
 
+// Fungsi untuk menambahkan komentar oleh pembeli
+const pembeliTambahKomentar = async (req, res) => {
+    try {
+        const { id_produk, id_pengguna, rating, komentar } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!id_produk || !id_pengguna || !rating || !komentar) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data komentar ke database
+        await dbModel.postPembeliTambahKomentar(id_produk, id_pengguna, rating, komentar);
+        res.status(201).json({ message: 'Ulasan berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -224,5 +254,6 @@ module.exports = {
     pembeliOrderProduk, 
     pembeliRiwayatTransaksi,
     pembeliRiwayatTransaksiDetail,
-    pembeliUlasanProduk
+    pembeliUlasanProduk, 
+    pembeliTambahKomentar
 }

@@ -20,7 +20,7 @@ router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTra
 router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 
 //POST PEMBELI
-
+router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
 
 
 
