@@ -35,6 +35,9 @@ router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPenga
 router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
 router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
+//POST KARYAWAN
+router.post('/karyawanTambahPengajuanIzin', apiController.karyawanTambahPengajuanIzin);
+
 
 //UPDATE
 

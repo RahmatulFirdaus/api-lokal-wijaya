@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const postKaryawanTambahPengajuanIzin = (id, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) => {
+    const SQLQuery = `INSERT INTO karyawan_pengajuan_izin (id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) VALUES (?, ?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir]);
+}
+
 const getPengajuanIzinKaryawan = (id) => {
     const SQLQuery = `SELECT karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir, pengguna.nama FROM karyawan_pengajuan_izin JOIN pengguna ON karyawan_pengajuan_izin.id_pengguna = pengguna.id WHERE pengguna.id = ?;`
     return dbPool.query(SQLQuery, [id]);
@@ -142,5 +147,6 @@ module.exports = {
     getTampilProduk,
     getTampilProdukDetail,
     getTampilUlasanProduk,
-    getPengajuanIzinKaryawan
+    getPengajuanIzinKaryawan,
+    postKaryawanTambahPengajuanIzin,
  }

@@ -428,6 +428,25 @@ const karyawanTampilPengajuanIzin = async (req, res) => {
     }
 }
 
+//fungsi untuk karyawan tambah pengajuan izin
+const karyawanTambahPengajuanIzin = async (req, res) => {
+    try {
+        const { id, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!id || !tipe_izin || !deskripsi || !status || !tanggal_mulai || !tanggal_akhir) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.postKaryawanTambahPengajuanIzin(id, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir);
+        res.status(201).json({ message: 'Pengajuan izin berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -446,5 +465,6 @@ module.exports = {
     tampilProduk,
     tampilProdukDetail,
     tampilUlasanProduk,
-    karyawanTampilPengajuanIzin
+    karyawanTampilPengajuanIzin,
+    karyawanTambahPengajuanIzin
 }
