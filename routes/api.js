@@ -6,6 +6,8 @@ const apiController = require('../controller/apiController');
 
 //GET DEFAULT
 router.get('/login', apiController.login);
+router.get('/tampilProduk', apiController.tampilProduk);
+router.get('/tampilProdukDetail/:id', apiController.tampilProdukDetail);
 
 
 //POST DEFAULT

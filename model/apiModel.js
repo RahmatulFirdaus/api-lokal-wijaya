@@ -1,6 +1,17 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getTampilProduk = () => {
+    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk GROUP BY produk.id, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
+`;
+    return dbPool.query(SQLQuery);
+}
+
+const getTampilProdukDetail = (id) => {
+    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, varian_produk.warna AS warna_produk, varian_produk.ukuran AS ukuran_produk, varian_produk.stok AS stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk WHERE produk.id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const updateAkunPembeliNama = (id, nama) => {
     const SQLQuery = `UPDATE pengguna SET nama = ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [nama, id]);
@@ -118,5 +129,7 @@ module.exports = {
     updateAkunPembeliNama,
     updateAkunPembeliEmail,
     updateAkunPembeliNomorTelepon,
-    updateAkunPembeliPassword
+    updateAkunPembeliPassword,
+    getTampilProduk,
+    getTampilProdukDetail
  }

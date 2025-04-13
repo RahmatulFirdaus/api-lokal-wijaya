@@ -368,6 +368,36 @@ const pembeliProfileEmail = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+//Fungsi untuk tampil produk
+const tampilProduk = async (req, res) => {
+    try {
+        const [data] = await dbModel.getTampilProduk();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//Fungsi untuk tampil produk detail
+const tampilProdukDetail = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const [data] = await dbModel.getTampilProdukDetail(id);
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -382,5 +412,7 @@ module.exports = {
     pembeliProfilePassword,
     pembeliProfileNama,
     pembeliProfileNomorTelepon,
-    pembeliProfileEmail
+    pembeliProfileEmail,
+    tampilProduk,
+    tampilProdukDetail
 }
