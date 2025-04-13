@@ -398,6 +398,21 @@ const tampilProdukDetail = async (req, res) => {
     }
 }
 
+// Fungsi untuk menampilkan ulasan produk
+const tampilUlasanProduk = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const [data] = await dbModel.getTampilUlasanProduk(id);
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Ulasan produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data ulasan produk berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -414,5 +429,6 @@ module.exports = {
     pembeliProfileNomorTelepon,
     pembeliProfileEmail,
     tampilProduk,
-    tampilProdukDetail
+    tampilProdukDetail,
+    tampilUlasanProduk
 }
