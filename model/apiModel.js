@@ -1,6 +1,10 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getPengajuanIzinKaryawan = (id) => {
+    const SQLQuery = `SELECT karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir, pengguna.nama FROM karyawan_pengajuan_izin JOIN pengguna ON karyawan_pengajuan_izin.id_pengguna = pengguna.id WHERE pengguna.id = ?;`
+    return dbPool.query(SQLQuery, [id]);
+}
 const getTampilUlasanProduk = (id) => {
     const SQLQuery = `SELECT * FROM komentar WHERE komentar.id_produk = ?;`;
     return dbPool.query(SQLQuery, [id]);
@@ -137,5 +141,6 @@ module.exports = {
     updateAkunPembeliPassword,
     getTampilProduk,
     getTampilProdukDetail,
-    getTampilUlasanProduk
+    getTampilUlasanProduk,
+    getPengajuanIzinKaryawan
  }

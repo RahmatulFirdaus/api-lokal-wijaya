@@ -6,16 +6,18 @@ const apiController = require('../controller/apiController');
 
 //GET DEFAULT
 router.get('/login', apiController.login);
+
+//GET TAMPILAN PRODUK LIST
 router.get('/tampilProduk', apiController.tampilProduk);
-router.get('/tampilProdukDetail/:id', apiController.tampilProdukDetail);
-router.get('/tampilUlasanProduk/:id', apiController.tampilUlasanProduk);
+router.get('/tampilProdukDetail/:id', apiController.tampilProdukDetail); //id diisi dengan id produk
+router.get('/tampilUlasanProduk/:id', apiController.tampilUlasanProduk); //id diisi dengan id produk
 
 
 //POST DEFAULT
 router.post('/daftar', apiController.daftar);
 
 //GET PEMBELI
-
+//GET RIWAYT TRANSAKSI DIISI DENGAN ID PENGGUNA
 router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
 
 
@@ -25,12 +27,12 @@ router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 router.get('/pembeliFaktur/:id', apiController.pembeliFaktur);
 router.get('/pengiriman/:id', apiController.getPengirimanData);
 
+//GET KARYAWAN
+router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
+
 
 //POST PEMBELI
 router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
-
-
-
 router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
 
