@@ -447,6 +447,32 @@ const karyawanTambahPengajuanIzin = async (req, res) => {
     }
 }
 
+//fungsi untuk karyawan tambah absensi, jika hari ini sudah absen, maka tidak bisa absen lagi
+const karyawanTambahAbsensi = async (req, res) => {
+    try {
+        const { id_pengguna } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!id_pengguna) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Cek apakah karyawan sudah absen hari ini
+        const [data] = await dbModel.cekAbensiKaryawan(id_pengguna);
+        if (data.length > 0) {
+            return res.status(400).json({ message: 'Anda sudah melakukan absen hari ini' });
+        }
+
+        // Simpan data ke database
+        await dbModel.postKaryawanTambahAbsensi(id_pengguna);
+        res.status(201).json({ message: 'Absensi berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
 module.exports = {
     login,
     daftar, 
@@ -466,5 +492,6 @@ module.exports = {
     tampilProdukDetail,
     tampilUlasanProduk,
     karyawanTampilPengajuanIzin,
-    karyawanTambahPengajuanIzin
+    karyawanTambahPengajuanIzin,
+    karyawanTambahAbsensi
 }

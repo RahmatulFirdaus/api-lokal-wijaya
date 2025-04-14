@@ -37,6 +37,7 @@ router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 
 //POST KARYAWAN
 router.post('/karyawanTambahPengajuanIzin', apiController.karyawanTambahPengajuanIzin);
+router.post('/karyawanTambahAbsensi', apiController.karyawanTambahAbsensi); //udah pasti absen
 
 
 //UPDATE

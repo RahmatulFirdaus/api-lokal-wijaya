@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const cekAbensiKaryawan = (id_pengguna) => {
+    const SQLQuery = `SELECT * FROM karyawan_absensi WHERE id_pengguna = ? AND DATE(absen_masuk) = CURDATE()`;
+    return dbPool.query(SQLQuery, [id_pengguna]);
+}
+
+const postKaryawanTambahAbsensi = (id_pengguna) => {
+    const SQLQuery = `INSERT INTO karyawan_absensi (id_pengguna, absen_masuk) VALUES (?, 'hadir')`;
+    return dbPool.query(SQLQuery, [id_pengguna]);
+}
+
 const postKaryawanTambahPengajuanIzin = (id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir) => {
     const SQLQuery = `INSERT INTO karyawan_pengajuan_izin (id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) VALUES (?, ?, ?, 'pending', ?, ?)`;
     return dbPool.query(SQLQuery, [id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir]);
@@ -149,4 +159,6 @@ module.exports = {
     getTampilUlasanProduk,
     getPengajuanIzinKaryawan,
     postKaryawanTambahPengajuanIzin,
+    postKaryawanTambahAbsensi,
+    cekAbensiKaryawan
  }
