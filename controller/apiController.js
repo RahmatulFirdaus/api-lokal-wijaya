@@ -462,6 +462,8 @@ const karyawanTambahAbsensi = async (req, res) => {
         if (data.length > 0) {
             return res.status(400).json({ message: 'Anda sudah melakukan absen hari ini' });
         }
+        console.log("ID Pengguna:", id_pengguna);
+        console.log("Data:", data);
 
         // Simpan data ke database
         await dbModel.postKaryawanTambahAbsensi(id_pengguna);

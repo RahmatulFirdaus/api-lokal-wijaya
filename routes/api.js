@@ -29,6 +29,7 @@ router.get('/pengiriman/:id', apiController.getPengirimanData);
 
 //GET KARYAWAN
 router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
+router.get('/karyawanTampil/:id', apiController.karyawanTampilAbsensi);
 
 
 //POST PEMBELI

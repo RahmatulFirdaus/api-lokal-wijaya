@@ -2,7 +2,7 @@ const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
 const cekAbensiKaryawan = (id_pengguna) => {
-    const SQLQuery = `SELECT * FROM karyawan_absensi WHERE id_pengguna = ? AND DATE(absen_masuk) = CURDATE()`;
+    const SQLQuery = `SELECT * FROM karyawan_absensi WHERE id_pengguna = ? AND DATE(tanggal) = CURDATE()`;
     return dbPool.query(SQLQuery, [id_pengguna]);
 }
 
