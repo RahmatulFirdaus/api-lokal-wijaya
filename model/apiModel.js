@@ -1,9 +1,9 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
-const postKaryawanTambahPengajuanIzin = (id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) => {
-    const SQLQuery = `INSERT INTO karyawan_pengajuan_izin (id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) VALUES (?, ?, ?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir]);
+const postKaryawanTambahPengajuanIzin = (id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir) => {
+    const SQLQuery = `INSERT INTO karyawan_pengajuan_izin (id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir) VALUES (?, ?, ?, 'pending', ?, ?)`;
+    return dbPool.query(SQLQuery, [id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir]);
 }
 
 const getPengajuanIzinKaryawan = (id) => {

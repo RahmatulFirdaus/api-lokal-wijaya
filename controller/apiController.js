@@ -431,15 +431,15 @@ const karyawanTampilPengajuanIzin = async (req, res) => {
 //fungsi untuk karyawan tambah pengajuan izin
 const karyawanTambahPengajuanIzin = async (req, res) => {
     try {
-        const { id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir } = req.body; // Mengambil data dari body request
+        const { id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir } = req.body; // Mengambil data dari body request
 
         // Validasi Pastikan semua field diisi
-        if (!id_pengguna || !tipe_izin || !deskripsi || !status || !tanggal_mulai || !tanggal_akhir) {
+        if (!id_pengguna || !tipe_izin || !deskripsi || !tanggal_mulai || !tanggal_akhir) {
             return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
-        await dbModel.postKaryawanTambahPengajuanIzin(id_pengguna, tipe_izin, deskripsi, status, tanggal_mulai, tanggal_akhir);
+        await dbModel.postKaryawanTambahPengajuanIzin(id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir);
         res.status(201).json({ message: 'Pengajuan izin berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
