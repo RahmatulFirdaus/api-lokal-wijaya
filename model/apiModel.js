@@ -1,6 +1,21 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok) => {
+    const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok]);
+}
+
+const postAdminTambahProduk = (nama_produk, deskripsi, harga_produk, link_gambar) => {
+    const SQLQuery = `INSERT INTO produk (nama, deskripsi, harga, link_gambar) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [nama_produk, deskripsi, harga_produk, link_gambar]);
+}
+
+const updateAdminStatusPengajuanIzinKaryawan = (id, status) => {
+    const SQLQuery = `UPDATE karyawan_pengajuan_izin SET status = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [status, id]);
+}
+
 const getAdminTampilPengajuanIzinKaryawanDetail = (id) => {
     const SQLQuery = `SELECT pengguna.nama, karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir FROM pengguna JOIN karyawan_pengajuan_izin ON pengguna.id = karyawan_pengajuan_izin.id_pengguna WHERE karyawan_pengajuan_izin.id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -190,5 +205,8 @@ module.exports = {
     postKaryawanTambahPenjualanOffline,
     getAdminTampilAbsensiKaryawan,
     getAdminTampilPengajuanIzinKaryawan,
-    getAdminTampilPengajuanIzinKaryawanDetail
+    getAdminTampilPengajuanIzinKaryawanDetail,
+    updateAdminStatusPengajuanIzinKaryawan,
+    postAdminTambahProduk,
+    postAdminTambahVarianProduk,
  }

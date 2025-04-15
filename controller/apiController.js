@@ -112,7 +112,7 @@ const pembeliTambahKeranjang = async (req, res) => {
 // Fungsi untuk menghasilkan nomor faktur
 // Format: FAK-YYYYMMDDHHmmss-RANDOM_NUMBER
 const generateNomorFaktur = () => {
-    const tanggal = timeMoment().tz('Asia/Jakarta').format('YYYYMMDDHHmmss');
+    const tanggal = timeMoment().format('YYYYMMDDHHmmss');
     const randomAngka = Math.floor(1000 + Math.random() * 9000); // 4 digit acak
     return `FAK-${tanggal}-${randomAngka}`;
 };
@@ -520,7 +520,7 @@ const adminTampilKaryawanAbsensi = async (req, res) => {
             message: 'Data absensi karyawan berhasil diambil',
             data: data.map((item) => ({
                 ...item,
-                tanggal: timeMoment(item.tanggal).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+                tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
             })),
         });
     } catch (error) {
@@ -536,15 +536,18 @@ const adminTampilKaryawanIzin = async (req, res) => {
         if (data.length === 0) {
             return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
         }
+        
 
         // Format tanggal pada setiap data pengajuan izin
         return res.status(200).json({
             message: 'Data pengajuan izin karyawan berhasil diambil',
             data: data.map((item) => ({
                 ...item,
-                tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
-                tanggal_akhir: timeMoment(item.tanggal_akhir).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+                tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                tanggal_akhir: timeMoment(item.tanggal_akhir).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                
             })),
+            
         });
     } catch (error) {
         console.error(error);
@@ -560,10 +563,63 @@ const adminTampilKaryawanIzinDetail = async (req, res) => {
         if (data.length === 0) {
             return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data pengajuan izin karyawan berhasil diambil', data: data });
+        return res.status(200).json({ message: 'Data pengajuan izin karyawan berhasil diambil',
+            data: data.map((item) => ({
+                ...item,
+                tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                tanggal_akhir: timeMoment(item.tanggal_akhir).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+            })),
+         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk mengupdate pengajuan izin karyawan pada admin
+const adminUpdateKaryawanIzin = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { status } = req.body; // Mengambil status dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!status) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAdminStatusPengajuanIzinKaryawan(id, status);
+        res.status(200).json({ message: 'Status pengajuan izin berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menambahkan produk dan varian produk oleh admin
+const adminTambahProduk = async (req, res) => {
+    try {
+        const { nama_produk, deskripsi, harga_produk, link_gambar, varian } = req.body;
+
+        // Validasi input sederhana
+        if (!nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
+            return res.status(400).json({ message: 'Data produk tidak lengkap atau format varian salah.' });
+        }
+
+        // Tambah produk
+        const result = await dbModel.postAdminTambahProduk(nama_produk, deskripsi, harga_produk, link_gambar);
+        const id_produk = result[0].insertId; // Ambil ID produk yang baru dimasukkan
+
+        // Tambah varian-varian
+        for (const v of varian) {
+            const { warna, ukuran, stok } = v;
+            await dbModel.postAdminTambahVarianProduk(id_produk, warna, ukuran, stok);
+        }
+
+        res.status(201).json({ message: 'Produk dan varian berhasil ditambahkan.' });
+    } catch (error) {
+        console.error('Error saat menambahkan produk:', error);
+        res.status(500).json({ message: 'Terjadi kesalahan saat menambahkan produk.' });
     }
 }
 
@@ -592,5 +648,7 @@ module.exports = {
     karyawanTambahPenjualanOffline,
     adminTampilKaryawanAbsensi,
     adminTampilKaryawanIzin,
-    adminTampilKaryawanIzinDetail
+    adminTampilKaryawanIzinDetail,
+    adminUpdateKaryawanIzin,
+    adminTambahProduk,
 }

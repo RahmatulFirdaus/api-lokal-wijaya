@@ -71,12 +71,14 @@ router.post('/upload', upload.single('bukti_transfer'), apiController.pembeliOrd
 router.get('/adminTampilKaryawanAbsensi', apiController.adminTampilKaryawanAbsensi); //sepaket ama laporan
 router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); //sepaket ama laporan (ini pengajuan izin)
 router.get('/adminTampilKaryawanIzinDetail/:id', apiController.adminTampilKaryawanIzinDetail); //sepaket ama laporan (ini pengajuan izin)
+//untuk tampilan produk pke api diatas aja
 
 
 //POST ADMIN
+router.post('/adminTambahProduk', apiController.adminTambahProduk);
 
 //UPDATE ADMIN
-router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin); //sepaket ama laporan (ini pengajuan izin)
+router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin); //(ini pengajuan izin)
 
 //DELETE ADMIN
 module.exports = router;
