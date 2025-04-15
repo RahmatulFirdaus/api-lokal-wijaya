@@ -507,6 +507,51 @@ const karyawanTambahPenjualanOffline = async (req, res) => {
     }
 }
 
+//fungsi untuk tampil data absensi karyawan pada admin
+const adminTampilKaryawanAbsensi = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilAbsensiKaryawan();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data absensi karyawan tidak ditemukan' });
+        }
+
+        // Perbaikan pada penggunaan map
+        return res.status(200).json({
+            message: 'Data absensi karyawan berhasil diambil',
+            data: data.map((item) => ({
+                ...item,
+                tanggal: timeMoment(item.tanggal).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+            })),
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// Fungsi untuk tampil data pengajuan izin karyawan pada admin
+const adminTampilKaryawanIzin = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilPengajuanIzinKaryawan();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
+        }
+
+        // Format tanggal pada setiap data pengajuan izin
+        return res.status(200).json({
+            message: 'Data pengajuan izin karyawan berhasil diambil',
+            data: data.map((item) => ({
+                ...item,
+                tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+                tanggal_akhir: timeMoment(item.tanggal_akhir).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+            })),
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -530,5 +575,7 @@ module.exports = {
     karyawanTambahPengajuanIzin,
     karyawanTambahAbsensi,
     karyawanTambahProdukPenjualanOffline,
-    karyawanTambahPenjualanOffline
+    karyawanTambahPenjualanOffline,
+    adminTampilKaryawanAbsensi,
+    adminTampilKaryawanIzin
 }

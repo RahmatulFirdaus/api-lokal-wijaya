@@ -60,4 +60,21 @@ router.patch('/pembeliUpdateProfileEmail/:id', apiController.pembeliProfileEmail
 //UPLOAD / POST PEMBELI
 router.post('/upload', upload.single('bukti_transfer'), apiController.pembeliOrderProduk);
 
+
+
+
+
+
+//YANG ADMIN ADMIN AJA
+
+//GET ADMIN
+router.get('/adminTampilKaryawanAbsensi', apiController.adminTampilKaryawanAbsensi); //sepaket ama laporan
+router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); 
+
+//POST ADMIN
+
+//UPDATE ADMIN
+
+//DELETE ADMIN
+
 module.exports = router;
