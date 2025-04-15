@@ -69,12 +69,14 @@ router.post('/upload', upload.single('bukti_transfer'), apiController.pembeliOrd
 
 //GET ADMIN
 router.get('/adminTampilKaryawanAbsensi', apiController.adminTampilKaryawanAbsensi); //sepaket ama laporan
-router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); 
+router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); //sepaket ama laporan (ini pengajuan izin)
+router.get('/adminTampilKaryawanIzinDetail/:id', apiController.adminTampilKaryawanIzinDetail); //sepaket ama laporan (ini pengajuan izin)
+
 
 //POST ADMIN
 
 //UPDATE ADMIN
+router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin); //sepaket ama laporan (ini pengajuan izin)
 
 //DELETE ADMIN
-
 module.exports = router;

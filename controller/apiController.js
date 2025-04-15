@@ -552,6 +552,20 @@ const adminTampilKaryawanIzin = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data pengajuan izin karyawan detail pada admin
+const adminTampilKaryawanIzinDetail = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const [data] = await dbModel.getAdminTampilPengajuanIzinKaryawanDetail(id);
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data pengajuan izin karyawan berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
 module.exports = {
     login,
@@ -577,5 +591,6 @@ module.exports = {
     karyawanTambahProdukPenjualanOffline,
     karyawanTambahPenjualanOffline,
     adminTampilKaryawanAbsensi,
-    adminTampilKaryawanIzin
+    adminTampilKaryawanIzin,
+    adminTampilKaryawanIzinDetail
 }
