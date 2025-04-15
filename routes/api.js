@@ -29,7 +29,7 @@ router.get('/pengiriman/:id', apiController.getPengirimanData);
 
 //GET KARYAWAN
 router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
-router.get('/karyawanTampil/:id', apiController.karyawanTampilAbsensi);
+router.get('/karyawanTambahProdukPenjualanOffline', apiController.karyawanTambahProdukPenjualanOffline); 
 
 
 //POST PEMBELI
@@ -39,6 +39,7 @@ router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
 //POST KARYAWAN
 router.post('/karyawanTambahPengajuanIzin', apiController.karyawanTambahPengajuanIzin);
 router.post('/karyawanTambahAbsensi', apiController.karyawanTambahAbsensi); //udah pasti absen
+router.post('/karyawanTambahPenjualanOffline', apiController.karyawanTambahPenjualanOffline); //udah pasti absen
 
 
 //UPDATE

@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const postKaryawanTambahPenjualanOffline = (id_varian_produk, id_pengguna) => {
+    const SQLQuery = `INSERT INTO karyawan_penjualan_offline (id_varian_produk, id_pengguna) VALUES (?, ?) `;
+    return dbPool.query(SQLQuery, [id_varian_produk, id_pengguna]);
+}
+
+const getKaryawanPenjualanOffline = () => {
+    const SQLQuery = `SELECT produk.nama AS nama_produk, produk.harga, varian_produk.warna, varian_produk.ukuran, pengguna.nama, karyawan_penjualan_offline.tanggal from produk join varian_produk on varian_produk.id_produk = produk.id join karyawan_penjualan_offline on karyawan_penjualan_offline.id_varian_produk = varian_produk.id join pengguna on karyawan_penjualan_offline.id_pengguna = pengguna.id`;
+    return dbPool.query(SQLQuery);
+}
+
 const cekAbensiKaryawan = (id_pengguna) => {
     const SQLQuery = `SELECT * FROM karyawan_absensi WHERE id_pengguna = ? AND DATE(tanggal) = CURDATE()`;
     return dbPool.query(SQLQuery, [id_pengguna]);
@@ -160,5 +170,7 @@ module.exports = {
     getPengajuanIzinKaryawan,
     postKaryawanTambahPengajuanIzin,
     postKaryawanTambahAbsensi,
-    cekAbensiKaryawan
+    cekAbensiKaryawan,
+    getKaryawanPenjualanOffline,
+    postKaryawanTambahPenjualanOffline,
  }

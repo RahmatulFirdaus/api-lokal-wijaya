@@ -474,6 +474,39 @@ const karyawanTambahAbsensi = async (req, res) => {
     }
 }
 
+//fungsi untuk tampil data karyawan penjualan offline
+const karyawanTambahProdukPenjualanOffline = async (req, res) => {
+    try {
+        const [data] = await dbModel.getKaryawanPenjualanOffline();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data penjualan offline tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data penjualan offline berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk karyawan tambah penjualan offline
+const karyawanTambahPenjualanOffline = async (req, res) => {
+    try {
+        const { id_varian_produk, id_pengguna } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!id_varian_produk || !id_pengguna) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.postKaryawanTambahPenjualanOffline(id_varian_produk, id_pengguna);
+        res.status(201).json({ message: 'Penjualan offline berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -495,5 +528,7 @@ module.exports = {
     tampilUlasanProduk,
     karyawanTampilPengajuanIzin,
     karyawanTambahPengajuanIzin,
-    karyawanTambahAbsensi
+    karyawanTambahAbsensi,
+    karyawanTambahProdukPenjualanOffline,
+    karyawanTambahPenjualanOffline
 }
