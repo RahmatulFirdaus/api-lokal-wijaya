@@ -79,8 +79,10 @@ router.get('/adminTampilUpdateProduk/:id', apiController.adminTampilUpdateProduk
 router.post('/adminTambahProduk', apiController.adminTambahProduk);
 
 //UPDATE ADMIN
-router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin); //(ini pengajuan izin)
-router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); //(ini pengajuan izin)
+router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
+router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
 
 //DELETE ADMIN
+router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk);
+
 module.exports = router;

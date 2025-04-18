@@ -677,6 +677,20 @@ const adminTampilUpdateProduk = async (req, res) => {
     }
 };
 
+//fungsi untuk menghapus produk oleh admin
+const adminDeleteProduk = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Hapus produk dari database
+        await dbModel.deleteAdminProduk(id);
+        res.status(200).json({ message: 'Produk berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 
 module.exports = {
@@ -709,4 +723,5 @@ module.exports = {
     adminTambahProduk,
     adminUpdateProduk,
     adminTampilUpdateProduk,
+    adminDeleteProduk,
 }
