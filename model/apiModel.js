@@ -1,6 +1,22 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateVarianProduk = (id_varian, warna, ukuran, stok) => {
+    const SQLQuery = `UPDATE varian_produk SET warna = ?, ukuran = ?, stok = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [warna, ukuran, stok, id_varian]);
+};
+
+const updateProduk = (id, nama_produk, deskripsi_produk, harga_produk, link_gambar) => {
+    const SQLQuery = `UPDATE produk SET nama = ?, deskripsi = ?, harga = ?, link_gambar = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nama_produk, deskripsi_produk, harga_produk, link_gambar, id]);
+};
+
+const insertVarianBaru = (id_produk, warna, ukuran, stok) => {
+    const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok) VALUES (?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok]);
+};
+
+
 const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok) => {
     const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok) VALUES (?, ?, ?, ?)`;
     return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok]);
@@ -209,4 +225,7 @@ module.exports = {
     updateAdminStatusPengajuanIzinKaryawan,
     postAdminTambahProduk,
     postAdminTambahVarianProduk,
+    updateProduk,
+    updateVarianProduk,
+    insertVarianBaru,
  }

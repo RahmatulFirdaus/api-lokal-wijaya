@@ -79,6 +79,7 @@ router.post('/adminTambahProduk', apiController.adminTambahProduk);
 
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin); //(ini pengajuan izin)
+router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); //(ini pengajuan izin)
 
 //DELETE ADMIN
 module.exports = router;

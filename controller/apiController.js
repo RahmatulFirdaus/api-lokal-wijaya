@@ -623,6 +623,37 @@ const adminTambahProduk = async (req, res) => {
     }
 }
 
+//fungsi untuk mengubah produk dan varian produk oleh admin
+const adminUpdateProduk = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nama_produk, deskripsi, harga_produk, link_gambar, varian } = req.body;
+
+        if (!id || !nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
+            return res.status(400).json({ message: 'Data tidak lengkap atau format salah.' });
+        }
+
+        // Update data utama produk
+        await dbModel.updateProduk(id, nama_produk, deskripsi, harga_produk, link_gambar);
+
+        for (const v of varian) {
+            const { id_varian, warna, ukuran, stok } = v;
+
+            if (id_varian) {
+                await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok);
+            } else {
+                await dbModel.insertVarianBaru(id, warna, ukuran, stok);
+            }
+        }
+
+        res.status(200).json({ message: 'Produk dan varian berhasil diperbarui.' });
+    } catch (error) {
+        console.error('Error saat update produk:', error);
+        res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui produk.' });
+    }
+};
+
+
 module.exports = {
     login,
     daftar, 
@@ -651,4 +682,5 @@ module.exports = {
     adminTampilKaryawanIzinDetail,
     adminUpdateKaryawanIzin,
     adminTambahProduk,
+    adminUpdateProduk,
 }
