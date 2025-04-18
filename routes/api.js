@@ -72,6 +72,7 @@ router.get('/adminTampilKaryawanAbsensi', apiController.adminTampilKaryawanAbsen
 router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); //sepaket ama laporan (ini pengajuan izin)
 router.get('/adminTampilKaryawanIzinDetail/:id', apiController.adminTampilKaryawanIzinDetail); //sepaket ama laporan (ini pengajuan izin)
 //untuk tampilan produk pke api diatas aja
+router.get('/adminTampilUpdateProduk/:id', apiController.adminTampilUpdateProduk); 
 
 
 //POST ADMIN

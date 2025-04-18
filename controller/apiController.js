@@ -653,6 +653,31 @@ const adminUpdateProduk = async (req, res) => {
     }
 };
 
+//fungsi untuk menampilkan di halaman update admin produk
+const adminTampilUpdateProduk = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [produkResult] = await dbModel.getAdminProduk(id);
+        if (produkResult.length === 0) {
+            return res.status(404).json({ message: 'Data produk tidak ditemukan' });
+        }
+
+        const [varianResult] = await dbModel.getAdminVarianProduk(id);
+
+        return res.status(200).json({
+            message: 'Data produk berhasil diambil',
+            data: {
+                produk: produkResult[0], // karena hanya satu produk berdasarkan ID
+                varian: varianResult
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
 
 module.exports = {
     login,
@@ -683,4 +708,5 @@ module.exports = {
     adminUpdateKaryawanIzin,
     adminTambahProduk,
     adminUpdateProduk,
+    adminTampilUpdateProduk,
 }

@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getAdminProduk = (id) => {
+    const SQLQuery = `SELECT id, nama, deskripsi, harga, link_gambar FROM produk WHERE id = ?;`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const getAdminVarianProduk = (id) => {
+    const SQLQuery = `SELECT id, id_produk, warna, ukuran, stok FROM varian_produk WHERE id_produk = ?;`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const updateVarianProduk = (id_varian, warna, ukuran, stok) => {
     const SQLQuery = `UPDATE varian_produk SET warna = ?, ukuran = ?, stok = ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [warna, ukuran, stok, id_varian]);
@@ -228,4 +238,6 @@ module.exports = {
     updateProduk,
     updateVarianProduk,
     insertVarianBaru,
+    getAdminProduk,
+    getAdminVarianProduk
  }
