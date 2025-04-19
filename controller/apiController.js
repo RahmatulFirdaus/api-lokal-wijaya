@@ -691,6 +691,20 @@ const adminDeleteProduk = async (req, res) => {
     }
 }
 
+// fungsi untuk menghapus varian produk oleh admin
+const adminDeleteVarianProduk = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Hapus varian produk dari database
+        await dbModel.deleteAdminVarianProduk(id);
+        res.status(200).json({ message: 'Varian produk berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 
 module.exports = {
@@ -724,4 +738,5 @@ module.exports = {
     adminUpdateProduk,
     adminTampilUpdateProduk,
     adminDeleteProduk,
+    adminDeleteVarianProduk,
 }

@@ -83,6 +83,8 @@ router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIz
 router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
 
 //DELETE ADMIN
-router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk);
+router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id diisi dengan id produk
+router.delete('/adminDeleteVarianProduk/:id', apiController.adminDeleteVarianProduk); //id diisi dengan id varian produk
+
 
 module.exports = router;

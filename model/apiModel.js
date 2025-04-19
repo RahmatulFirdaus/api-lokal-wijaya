@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const deleteAdminVarianProduk = (id) => {
+    const SQLQuery = `DELETE FROM varian_produk WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const deleteAdminProduk = (id) => {
     const SQLQuery = `DELETE FROM produk WHERE id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -246,4 +251,5 @@ module.exports = {
     getAdminProduk,
     getAdminVarianProduk,
     deleteAdminProduk,
+    deleteAdminVarianProduk,
  }
