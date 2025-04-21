@@ -73,14 +73,25 @@ router.get('/adminTampilKaryawanIzin', apiController.adminTampilKaryawanIzin); /
 router.get('/adminTampilKaryawanIzinDetail/:id', apiController.adminTampilKaryawanIzinDetail); //sepaket ama laporan (ini pengajuan izin)
 //untuk tampilan produk pke api diatas aja
 router.get('/adminTampilUpdateProduk/:id', apiController.adminTampilUpdateProduk); 
+router.get('/adminTampilHasilTransaksiOnline', apiController.adminTampilHasilTransaksiOnline); //sepaket ama laporan
+
+//tambahan diluar rancangan
+router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
 
 
 //POST ADMIN
 router.post('/adminTambahProduk', apiController.adminTambahProduk);
 
+//POST diluar rancangan
+router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEco);
+
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
 router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
+
+
+//UPDATE diluar rancangan
+router.patch('/adminUpdateHargaProdukEco/:id', apiController.adminUpdateHargaProdukEco); //id diisi dengan id produk
 
 //DELETE ADMIN
 router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id diisi dengan id produk

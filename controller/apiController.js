@@ -705,7 +705,79 @@ const adminDeleteVarianProduk = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data hasil transaksi online admin
+const adminTampilHasilTransaksiOnline = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilHasilTransaksiOnline();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data transaksi online tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data transaksi online berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
+//fungsi untuk menampilkan produk eco
+const adminTampilProdukEco = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilProdukEco();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menambahkan harga asli dan status produk eco
+const adminTambahHargaProdukEco = async (req, res) => {
+    try {
+        const { id_produk, harga_asli } = req.body;
+
+        if (!id_produk || !harga_asli) {
+            return res.status(400).json({
+                message: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
+            });
+        }
+        await dbModel.postAdminTambahProdukEco(id_produk,harga_asli);
+
+        res.status(201).json({
+            message: 'Produk berhasil ditambahkan ke produk_eco',
+        });
+    } catch (error) {
+        console.error('Error saat menambahkan produk_eco:', error);
+        res.status(500).json({
+            message: 'Terjadi kesalahan saat menambahkan produk_eco',
+        });
+    }
+}
+
+//fungsi untuk mengubah harga asli produk eco
+const adminUpdateHargaProdukEco = async (req, res) => {
+    try {
+        const { id_produk, harga_asli } = req.body;
+
+        if (!id_produk || !harga_asli) {
+            return res.status(400).json({
+                message: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
+            });
+        }
+        await dbModel.updateAdminUbahProdukEco(id_produk,harga_asli);
+
+        res.status(201).json({
+            message: 'Produk berhasil diubah di produk_eco',
+        });
+    } catch (error) {
+        console.error('Error saat mengubah produk_eco:', error);
+        res.status(500).json({
+            message: 'Terjadi kesalahan saat mengubah produk_eco',
+        });
+    }
+}
 
 module.exports = {
     login,
@@ -739,4 +811,8 @@ module.exports = {
     adminTampilUpdateProduk,
     adminDeleteProduk,
     adminDeleteVarianProduk,
+    adminTampilHasilTransaksiOnline,
+    adminTampilProdukEco,
+    adminTambahHargaProdukEco,
+    adminUpdateHargaProdukEco
 }
