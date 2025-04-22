@@ -746,7 +746,7 @@ const adminTambahHargaProdukEco = async (req, res) => {
         await dbModel.postAdminTambahProdukEco(id_produk,harga_asli);
 
         res.status(201).json({
-            message: 'Produk berhasil ditambahkan ke produk_eco',
+            message: 'Berhasil ditambahkan',
         });
     } catch (error) {
         console.error('Error saat menambahkan produk_eco:', error);
@@ -761,6 +761,9 @@ const adminUpdateHargaProdukEco = async (req, res) => {
     try {
         const { id_produk, harga_asli } = req.body;
 
+        console.log("ID Produk:", id_produk);
+        console.log("Harga Asli:", harga_asli);
+
         if (!id_produk || !harga_asli) {
             return res.status(400).json({
                 message: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
@@ -769,7 +772,7 @@ const adminUpdateHargaProdukEco = async (req, res) => {
         await dbModel.updateAdminUbahProdukEco(id_produk,harga_asli);
 
         res.status(201).json({
-            message: 'Produk berhasil diubah di produk_eco',
+            message: 'Berhasil diubah',
         });
     } catch (error) {
         console.error('Error saat mengubah produk_eco:', error);
