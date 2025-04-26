@@ -74,6 +74,9 @@ router.get('/adminTampilKaryawanIzinDetail/:id', apiController.adminTampilKaryaw
 //untuk tampilan produk pke api diatas aja
 router.get('/adminTampilUpdateProduk/:id', apiController.adminTampilUpdateProduk); 
 router.get('/adminTampilHasilTransaksiOnline', apiController.adminTampilHasilTransaksiOnline); //sepaket ama laporan
+router.get('/adminTampilHasilTransaksiPenjualanHarianOnline', apiController.adminTampilHasilTransaksiPenjualanHarianOnline); 
+router.get('/adminTampilHasilTransaksiPenjualanHarianOffline', apiController.adminTampilHasilTransaksiPenjualanHarianOffline);
+// router.get('/adminTampilHasilTransaksiOffline', apiController.adminTampilHasilTransaksiOffline); //sepaket ama laporan
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
