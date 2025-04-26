@@ -787,45 +787,84 @@ const adminUpdateHargaProdukEco = async (req, res) => {
     }
 }
 
-//fungsi untuk menampilkan data hasil transaksi online admin
-const adminTampilHasilTransaksiPenjualanHarianOnline = async (req, res) => {
-    try {
-        const [data] = await dbModel.getAdminTampilPenjualanHarianOnline();
-        if (data.length === 0) {
-            return res.status(404).json({ message: 'Data transaksi online tidak ditemukan' });
-        }
+// //fungsi untuk menampilkan data hasil transaksi online admin
+// const adminTampilHasilTransaksiPenjualanHarianOnline = async (req, res) => {
+//     try {
+//         const [data] = await dbModel.getAdminTampilPenjualanHarianOnline();
+//         if (data.length === 0) {
+//             return res.status(404).json({ message: 'Data transaksi online tidak ditemukan' });
+//         }
         
-        return res.status(200).json({ message: 'Data transaksi online berhasil diambil', data:
-            data.map((item) => ({
-                ...item,
-                tanggal_order: timeMoment(item.tanggal_order).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
-            })),
-         });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-}
+//         return res.status(200).json({ message: 'Data transaksi online berhasil diambil', data:
+//             data.map((item) => ({
+//                 ...item,
+//                 tanggal_order: timeMoment(item.tanggal_order).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+//             })),
+//          });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ message: 'Internal server error' });
+//     }
+// }
 
-// fungsi untuk menampilkan data hasil transaksi offline admin
-const adminTampilHasilTransaksiPenjualanHarianOffline = async (req, res) => {
-    try {
-        const [data] = await dbModel.getAdminTampilPenjualanHarianOffline();
-        if (data.length === 0) {
-            return res.status(404).json({ message: 'Data transaksi offline tidak ditemukan' });
-        }
+// // fungsi untuk menampilkan data hasil transaksi offline admin
+// const adminTampilHasilTransaksiPenjualanHarianOffline = async (req, res) => {
+//     try {
+//         const [data] = await dbModel.getAdminTampilPenjualanHarianOffline();
+//         if (data.length === 0) {
+//             return res.status(404).json({ message: 'Data transaksi offline tidak ditemukan' });
+//         }
         
-        return res.status(200).json({ message: 'Data transaksi offline berhasil diambil', data:
-            data.map((item) => ({
-                ...item,
-                tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
-            })),
-         });
+//         return res.status(200).json({ message: 'Data transaksi offline berhasil diambil', data:
+//             data.map((item) => ({
+//                 ...item,
+//                 tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+//             })),
+//          });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ message: 'Internal server error' });
+//     }
+// }
+
+const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
+    try {
+      // Ambil data online dan offline secara paralel
+      const [dataOnlineResponse, dataOfflineResponse] = await Promise.all([
+        dbModel.getAdminTampilPenjualanHarianOnline(),
+        dbModel.getAdminTampilPenjualanHarianOffline(),
+      ]);
+  
+      const dataOnline = dataOnlineResponse[0] || [];
+      const dataOffline = dataOfflineResponse[0] || [];
+  
+      // Format tanggal
+      const formattedDataOnline = dataOnline.map(item => ({
+        ...item,
+        tanggal_order: timeMoment(item.tanggal_order)
+          .tz('Asia/Makassar')
+          .format('YYYY-MM-DD HH:mm:ss'),
+      }));
+  
+      const formattedDataOffline = dataOffline.map(item => ({
+        ...item,
+        tanggal: timeMoment(item.tanggal)
+          .tz('Asia/Makassar')
+          .format('YYYY-MM-DD HH:mm:ss'),
+      }));
+  
+      return res.status(200).json({
+        message: 'Data transaksi berhasil diambil',
+        data_online: formattedDataOnline,
+        data_offline: formattedDataOffline,
+      });
+      
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+      console.error(error);
+      return res.status(500).json({ message: 'Internal server error' });
     }
-}
+  };
+  
 
 module.exports = {
     login,
@@ -863,7 +902,8 @@ module.exports = {
     adminTampilProdukEco,
     adminTambahHargaProdukEco,
     adminUpdateHargaProdukEco,
-    adminTampilHasilTransaksiPenjualanHarianOnline,
-    adminTampilHasilTransaksiPenjualanHarianOffline,
+    // adminTampilHasilTransaksiPenjualanHarianOnline,
+    // adminTampilHasilTransaksiPenjualanHarianOffline,
+    adminTampilSemuaHasilTransaksiPenjualanHarian,
 
 }
