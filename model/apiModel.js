@@ -7,12 +7,13 @@ const getAdminHargaAsli = () => {
 }
 
 const getAdminLaporanTotalHargaOnline = () => {
-    const SQLQuery = `SELECT DATE(orderan.tanggal_order) AS tanggal, SUM(orderan.total_harga) AS total_harga FROM orderan GROUP BY DATE(orderan.tanggal_order) ORDER BY tanggal ASC;`;
+    const SQLQuery = `SELECT DATE(orderan.tanggal_order) AS tanggal, SUM(produk.harga * item_order.jumlah_order) AS total_harga, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk_eco.harga_asli * item_order.jumlah_order ELSE 0 END) AS total_harga_asli, SUM(CASE WHEN produk_eco.status = 'sudah' THEN (produk.harga - produk_eco.harga_asli) * item_order.jumlah_order ELSE 0 END) AS total_keuntungan FROM orderan JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id GROUP BY DATE(orderan.tanggal_order) ORDER BY tanggal ASC;
+`;
     return dbPool.query(SQLQuery);
 }
 
 const getAdminLaporanTotalHargaOffline = () => {
-    const SQLQuery = `SELECT DATE(karyawan_penjualan_offline.tanggal) AS tanggal, SUM(produk.harga) AS total_penjualan FROM karyawan_penjualan_offline JOIN varian_produk ON karyawan_penjualan_offline.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id GROUP BY DATE(karyawan_penjualan_offline.tanggal) ORDER BY tanggal ASC;`;
+    const SQLQuery = `SELECT DATE(karyawan_penjualan_offline.tanggal) AS tanggal, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk.harga ELSE produk.harga END) AS total_penjualan, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk_eco.harga_asli ELSE 0 END) AS total_harga_asli, SUM(CASE WHEN produk_eco.status = 'sudah' THEN (produk.harga - produk_eco.harga_asli) ELSE 0 END) AS total_keuntungan FROM karyawan_penjualan_offline JOIN varian_produk ON karyawan_penjualan_offline.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id GROUP BY DATE(karyawan_penjualan_offline.tanggal) ORDER BY tanggal ASC;`;
     return dbPool.query(SQLQuery);
 }
 

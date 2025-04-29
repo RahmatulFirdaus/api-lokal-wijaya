@@ -865,8 +865,7 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
     }
   };
   
-//fungsi untuk menampilkan laporan harian admin
-const adminLaporanHarian = async (req, res) => {
+  const adminLaporanHarian = async (req, res) => {
     try {
         // Ambil data penjualan online dan offline
         const [onlineResults] = await dbModel.getAdminLaporanTotalHargaOnline();
@@ -885,21 +884,28 @@ const adminLaporanHarian = async (req, res) => {
             const online = onlineResults[j];
 
             let tanggal, total_penjualan_offline, total_penjualan_online;
+            let keuntungan_penjualan_offline = 0, keuntungan_penjualan_online = 0;
 
             if (offline && (!online || offline.tanggal < online.tanggal)) {
                 tanggal = offline.tanggal;
                 total_penjualan_offline = offline.total_penjualan;
+                keuntungan_penjualan_offline = offline.total_keuntungan;
                 total_penjualan_online = 0;
+                keuntungan_penjualan_online = 0;
                 i++;
             } else if (online && (!offline || online.tanggal < offline.tanggal)) {
                 tanggal = online.tanggal;
                 total_penjualan_offline = 0;
+                keuntungan_penjualan_offline = 0;
                 total_penjualan_online = online.total_harga;
+                keuntungan_penjualan_online = online.total_keuntungan;
                 j++;
             } else {
                 tanggal = offline.tanggal;
                 total_penjualan_offline = offline.total_penjualan;
+                keuntungan_penjualan_offline = offline.total_keuntungan;
                 total_penjualan_online = online.total_harga;
+                keuntungan_penjualan_online = online.total_keuntungan;
                 i++;
                 j++;
             }
@@ -910,12 +916,21 @@ const adminLaporanHarian = async (req, res) => {
             // Pastikan total penjualan offline dan online adalah angka, bukan string
             total_penjualan_offline = parseInt(total_penjualan_offline, 10);
             total_penjualan_online = parseInt(total_penjualan_online, 10);
+            keuntungan_penjualan_offline = parseInt(keuntungan_penjualan_offline, 10);
+            keuntungan_penjualan_online = parseInt(keuntungan_penjualan_online, 10);
+
+            // Hitung total harga harian dan total keuntungan harian
+            const total_harian = total_penjualan_offline + total_penjualan_online;
+            const total_keuntungan_harian = keuntungan_penjualan_offline + keuntungan_penjualan_online;
 
             laporan.push({
                 tanggal: formattedTanggal,
                 total_penjualan_offline,
                 total_penjualan_online,
-                total: total_penjualan_offline + total_penjualan_online
+                keuntungan_penjualan_offline,
+                keuntungan_penjualan_online,
+                total_harian,
+                total_keuntungan_harian
             });
         }
 
