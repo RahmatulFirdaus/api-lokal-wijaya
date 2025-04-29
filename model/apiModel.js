@@ -1,6 +1,21 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getAdminHargaAsli = () => {
+    const SQLQuery = `SELECT SUM(harga_asli) AS total_harga_asli FROM produk_eco;`;
+    return dbPool.query(SQLQuery);
+}
+
+const getAdminLaporanTotalHargaOnline = () => {
+    const SQLQuery = `SELECT DATE(orderan.tanggal_order) AS tanggal, SUM(orderan.total_harga) AS total_harga FROM orderan GROUP BY DATE(orderan.tanggal_order) ORDER BY tanggal ASC;`;
+    return dbPool.query(SQLQuery);
+}
+
+const getAdminLaporanTotalHargaOffline = () => {
+    const SQLQuery = `SELECT DATE(karyawan_penjualan_offline.tanggal) AS tanggal, SUM(produk.harga) AS total_penjualan FROM karyawan_penjualan_offline JOIN varian_produk ON karyawan_penjualan_offline.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id GROUP BY DATE(karyawan_penjualan_offline.tanggal) ORDER BY tanggal ASC;`;
+    return dbPool.query(SQLQuery);
+}
+
 const getAdminTampilPenjualanHarianOffline = () => {
     const SQLQuery = `SELECT karyawan_penjualan_offline.tanggal, produk.nama AS nama_produk, produk.harga, varian_produk.warna, varian_produk.ukuran FROM karyawan_penjualan_offline JOIN pengguna ON pengguna.id = karyawan_penjualan_offline.id_pengguna JOIN varian_produk ON varian_produk.id = karyawan_penjualan_offline.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk ORDER BY karyawan_penjualan_offline.tanggal DESC;`;
     return dbPool.query(SQLQuery);
@@ -288,4 +303,7 @@ module.exports = {
     updateAdminUbahProdukEco,
     getAdminTampilPenjualanHarianOnline,
     getAdminTampilPenjualanHarianOffline,
+    getAdminLaporanTotalHargaOffline,
+    getAdminLaporanTotalHargaOnline,
+    getAdminHargaAsli,
  }

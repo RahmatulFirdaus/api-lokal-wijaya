@@ -865,6 +865,71 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
     }
   };
   
+//fungsi untuk menampilkan laporan harian admin
+const adminLaporanHarian = async (req, res) => {
+    try {
+        // Ambil data penjualan online dan offline
+        const [onlineResults] = await dbModel.getAdminLaporanTotalHargaOnline();
+        const [offlineResults] = await dbModel.getAdminLaporanTotalHargaOffline();
+
+        if (onlineResults.length === 0 && offlineResults.length === 0) {
+            return res.status(404).json({ message: 'Data laporan tidak ditemukan' });
+        }
+
+        // Gabungkan hasil laporan berdasarkan tanggal
+        const laporan = [];
+        let i = 0, j = 0;
+
+        while (i < offlineResults.length || j < onlineResults.length) {
+            const offline = offlineResults[i];
+            const online = onlineResults[j];
+
+            let tanggal, total_penjualan_offline, total_penjualan_online;
+
+            if (offline && (!online || offline.tanggal < online.tanggal)) {
+                tanggal = offline.tanggal;
+                total_penjualan_offline = offline.total_penjualan;
+                total_penjualan_online = 0;
+                i++;
+            } else if (online && (!offline || online.tanggal < offline.tanggal)) {
+                tanggal = online.tanggal;
+                total_penjualan_offline = 0;
+                total_penjualan_online = online.total_harga;
+                j++;
+            } else {
+                tanggal = offline.tanggal;
+                total_penjualan_offline = offline.total_penjualan;
+                total_penjualan_online = online.total_harga;
+                i++;
+                j++;
+            }
+
+            // Format tanggal menggunakan moment-timezone dengan timezone Asia/Makassar
+            const formattedTanggal = timeMoment(tanggal).tz('Asia/Makassar').format('YYYY-MM-DD');
+
+            // Pastikan total penjualan offline dan online adalah angka, bukan string
+            total_penjualan_offline = parseInt(total_penjualan_offline, 10);
+            total_penjualan_online = parseInt(total_penjualan_online, 10);
+
+            laporan.push({
+                tanggal: formattedTanggal,
+                total_penjualan_offline,
+                total_penjualan_online,
+                total: total_penjualan_offline + total_penjualan_online
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Data laporan berhasil diambil',
+            data: laporan
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 
 module.exports = {
     login,
@@ -905,5 +970,6 @@ module.exports = {
     // adminTampilHasilTransaksiPenjualanHarianOnline,
     // adminTampilHasilTransaksiPenjualanHarianOffline,
     adminTampilSemuaHasilTransaksiPenjualanHarian,
+    adminLaporanHarian,
 
 }

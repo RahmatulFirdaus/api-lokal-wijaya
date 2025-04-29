@@ -102,4 +102,7 @@ router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id d
 router.delete('/adminDeleteVarianProduk/:id', apiController.adminDeleteVarianProduk); //id diisi dengan id varian produk
 
 
+//Laporan Admin External
+router.get('/adminLaporanHarian', apiController.adminLaporanHarian); 
+
 module.exports = router;
