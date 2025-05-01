@@ -88,20 +88,19 @@ const daftar = async (req, res) => {
 const pembeliTambahKeranjang = async (req, res) => {
     try {
         // Ambil data dari body request
-        const { id_pengguna, id_varian_produk, jumlah_order, harga } = req.body;
+        const { id_pengguna, id_varian_produk, jumlah_order } = req.body;
 
         console.log("ID Pengguna:", id_pengguna);
         console.log("ID Varian Produk:", id_varian_produk); 
         console.log("Jumlah Order:", jumlah_order);
-        console.log("Harga:", harga);
 
         // Validasi Pastikan semua field diisi
-        if (!id_pengguna || !id_varian_produk || !jumlah_order || !harga) {
+        if (!id_pengguna || !id_varian_produk || !jumlah_order) {
             return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke keranjang
-        await dbModel.postPembeliTambahKeranjang(id_pengguna, id_varian_produk, jumlah_order, harga);
+        await dbModel.postPembeliTambahKeranjang(id_pengguna, id_varian_produk, jumlah_order);
         res.status(201).json({ message: 'Produk berhasil ditambahkan ke keranjang' });
     } catch (error) {
         console.error(error);
@@ -945,6 +944,106 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
     }
 };
 
+// fungsi untuk menampilkan data metode pembayaran
+const adminTampilMetodePembayaran = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminMetodePembayaran();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data metode pembayaran tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data metode pembayaran berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// fungsi untuk menampilkan keranjang pembeli
+const pembeliTampilKeranjang = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data keranjang pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPembeliTampilKeranjang(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Keranjang tidak ditemukan' });
+        }
+
+        // Mengembalikan data keranjang
+        return res.status(200).json({ message: 'Keranjang berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menghapus keranjang pembeli
+const pembeliDeleteKeranjang = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Hapus produk dari keranjang berdasarkan id_produk dan id_pengguna
+        await dbModel.deletePembeliKeranjang(id);
+        res.status(200).json({ message: 'Produk berhasil dihapus dari keranjang' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk admin menambahkan metode pembayaran
+const adminTambahMetodePembayaran = async (req, res) => {
+    try {
+        const { nama_metode, deskripsi } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!nama_metode || !deskripsi ) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.postAdminMetodePembayaran(nama_metode, deskripsi);
+        res.status(201).json({ message: 'Metode pembayaran berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk admin mengubah atau mengupdate metode pembayaran
+const adminUpdateMetodePembayaran = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { nama_metode, deskripsi } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!nama_metode || !deskripsi) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAdminMetodePembayaran(id, nama_metode, deskripsi);
+        res.status(200).json({ message: 'Metode pembayaran berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+// fungsi untuk menhapus metode pembayaran
+const adminDeleteMetodePembayaran = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Hapus metode pembayaran berdasarkan id
+        await dbModel.deleteAdminMetodePembayaran(id);
+        res.status(200).json({ message: 'Metode pembayaran berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
 module.exports = {
     login,
@@ -986,5 +1085,10 @@ module.exports = {
     // adminTampilHasilTransaksiPenjualanHarianOffline,
     adminTampilSemuaHasilTransaksiPenjualanHarian,
     adminLaporanHarian,
-
+    adminTampilMetodePembayaran,
+    pembeliTampilKeranjang,
+    pembeliDeleteKeranjang,
+    adminTambahMetodePembayaran,
+    adminUpdateMetodePembayaran,
+    adminDeleteMetodePembayaran,
 }

@@ -26,6 +26,7 @@ router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTra
 router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 router.get('/pembeliFaktur/:id', apiController.pembeliFaktur);
 router.get('/pengiriman/:id', apiController.getPengirimanData);
+router.get('/pembeliTampilKeranjang/:id', apiController.pembeliTampilKeranjang); //id diisi dengan id pengguna
 
 //GET KARYAWAN
 router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
@@ -54,6 +55,7 @@ router.patch('/pembeliUpdateProfileEmail/:id', apiController.pembeliProfileEmail
 
 
 //DELETE
+router.delete('/pembeliDeleteKeranjang/:id', apiController.pembeliDeleteKeranjang); //id diisi dengan id keranjang
 
 
 
@@ -77,7 +79,7 @@ router.get('/adminTampilHasilTransaksiOnline', apiController.adminTampilHasilTra
 // router.get('/adminTampilHasilTransaksiPenjualanHarianOnline', apiController.adminTampilHasilTransaksiPenjualanHarianOnline);  // kalo kepake
 // router.get('/adminTampilHasilTransaksiPenjualanHarianOffline', apiController.adminTampilHasilTransaksiPenjualanHarianOffline); // kalo kepake
 router.get('/adminTampilSemuaHasilTransaksiPenjualanHarian', apiController.adminTampilSemuaHasilTransaksiPenjualanHarian);
-// router.get('/adminTampilHasilTransaksiOffline', apiController.adminTampilHasilTransaksiOffline); //sepaket ama laporan
+router.get('/adminTampilMetodePembayaran', apiController.adminTampilMetodePembayaran);
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
@@ -85,6 +87,7 @@ router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
 
 //POST ADMIN
 router.post('/adminTambahProduk', apiController.adminTambahProduk);
+router.post('/adminTambahMetodePembayaran', apiController.adminTambahMetodePembayaran);
 
 //POST diluar rancangan
 router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEco);
@@ -92,6 +95,7 @@ router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEc
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
 router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
+router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 
 
 //UPDATE diluar rancangan
@@ -100,6 +104,7 @@ router.patch('/adminUpdateHargaProdukEco', apiController.adminUpdateHargaProdukE
 //DELETE ADMIN
 router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id diisi dengan id produk
 router.delete('/adminDeleteVarianProduk/:id', apiController.adminDeleteVarianProduk); //id diisi dengan id varian produk
+router.delete('/adminDeleteMetodePembayaran/:id', apiController.adminDeleteMetodePembayaran); //id diisi dengan id metode pembayaran
 
 
 //Laporan Admin External

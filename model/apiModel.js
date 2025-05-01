@@ -1,6 +1,36 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const deleteAdminMetodePembayaran = (id) => {
+    const SQLQuery = `DELETE FROM metode_pembayaran WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const updateAdminMetodePembayaran = (id, nama_metode, deskripsi) => {
+    const SQLQuery = `UPDATE metode_pembayaran SET nama_metode = ?, deskripsi = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nama_metode, deskripsi, id]);
+}
+
+const postAdminMetodePembayaran = (nama_metode, deskripsi) => {
+    const SQLQuery = `INSERT INTO metode_pembayaran (nama_metode, deskripsi ) VALUES (?, ?)`;
+    return dbPool.query(SQLQuery, [nama_metode, deskripsi]);
+}
+
+const deletePembeliKeranjang = (id) => {
+    const SQLQuery = `DELETE FROM item_order WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const getPembeliTampilKeranjang = (id) => {
+    const SQLQuery = `SELECT item_order.id AS id_item_order, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga AS harga_satuan FROM item_order JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id WHERE item_order.id_pengguna = ? AND item_order.id_orderan IS NULL`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const getAdminMetodePembayaran = () => {
+    const SQLQuery = `SELECT * FROM metode_pembayaran`;
+    return dbPool.query(SQLQuery);
+}
+
 const getAdminHargaAsli = () => {
     const SQLQuery = `SELECT SUM(harga_asli) AS total_harga_asli FROM produk_eco;`;
     return dbPool.query(SQLQuery);
@@ -235,9 +265,9 @@ const postPembeliOrderProduk = (id_metode_pembayaran, total_harga) => {
     return dbPool.query(SQLQuery, [id_metode_pembayaran, total_harga]);
 }
 
-const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order, harga) => {
-    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order, harga) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order, harga]);
+const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order) => {
+    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order) VALUES (?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order]);
 }
 
 const getUsernameLogin = (username) => {
@@ -307,4 +337,10 @@ module.exports = {
     getAdminLaporanTotalHargaOffline,
     getAdminLaporanTotalHargaOnline,
     getAdminHargaAsli,
+    getAdminMetodePembayaran,
+    getPembeliTampilKeranjang,
+    deletePembeliKeranjang,
+    postAdminMetodePembayaran,
+    updateAdminMetodePembayaran,
+    deleteAdminMetodePembayaran,
  }
