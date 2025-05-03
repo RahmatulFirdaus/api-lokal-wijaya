@@ -80,6 +80,7 @@ router.get('/adminTampilHasilTransaksiOnline', apiController.adminTampilHasilTra
 // router.get('/adminTampilHasilTransaksiPenjualanHarianOffline', apiController.adminTampilHasilTransaksiPenjualanHarianOffline); // kalo kepake
 router.get('/adminTampilSemuaHasilTransaksiPenjualanHarian', apiController.adminTampilSemuaHasilTransaksiPenjualanHarian);
 router.get('/adminTampilMetodePembayaran', apiController.adminTampilMetodePembayaran);
+router.get('/adminTampilVerifikasiPembayaran', apiController.adminTampilVerifikasiPembayaran); //sepaket ama laporan, sama waktu dalam tampil ubahnya
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
@@ -96,6 +97,7 @@ router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEc
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
 router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
+router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 
 
 //UPDATE diluar rancangan

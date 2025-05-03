@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateAdminVerifikasiPembayaran = (id, status, catatan_admin) => {
+    const SQLQuery = `UPDATE orderan SET status = ?, catatan_admin = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [status, catatan_admin, id]);
+}
+
+const getAdminTampilVerifikasiPembayaran = () => {
+    const SQLQuery = `SELECT orderan.id as id_orderan, orderan.status, orderan.catatan_admin, pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, pembayaran.bukti_transfer FROM orderan JOIN pembayaran ON pembayaran.id_orderan = orderan.id `;
+    return dbPool.query(SQLQuery);
+}
+
 const deleteAdminMetodePembayaran = (id) => {
     const SQLQuery = `DELETE FROM metode_pembayaran WHERE id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -343,4 +353,6 @@ module.exports = {
     postAdminMetodePembayaran,
     updateAdminMetodePembayaran,
     deleteAdminMetodePembayaran,
+    getAdminTampilVerifikasiPembayaran,
+    updateAdminVerifikasiPembayaran,
  }

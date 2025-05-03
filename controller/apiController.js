@@ -1045,6 +1045,40 @@ const adminDeleteMetodePembayaran = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data verifikasi pembayaran
+const adminTampilVerifikasiPembayaran = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilVerifikasiPembayaran();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data verifikasi pembayaran tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data verifikasi pembayaran berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk mengupdate status verifikasi pembayaran
+const adminUpdateVerifikasiPembayaran = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { status, catatan_admin } = req.body; // Mengambil status dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!status) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAdminVerifikasiPembayaran(id, status, catatan_admin);
+        res.status(200).json({ message: 'Status verifikasi pembayaran berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -1091,4 +1125,6 @@ module.exports = {
     adminTambahMetodePembayaran,
     adminUpdateMetodePembayaran,
     adminDeleteMetodePembayaran,
+    adminTampilVerifikasiPembayaran,
+    adminUpdateVerifikasiPembayaran,
 }
