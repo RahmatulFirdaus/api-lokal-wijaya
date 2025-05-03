@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getAdminTampilFakturOnline = () => {
+    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama as nama_pengguna, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id;`;
+    return dbPool.query(SQLQuery);
+}
+
 const updateAdminVerifikasiPembayaran = (id, status, catatan_admin) => {
     const SQLQuery = `UPDATE orderan SET status = ?, catatan_admin = ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [status, catatan_admin, id]);
@@ -222,10 +227,10 @@ const getPengiriman = (id_orderan) => {
     return dbPool.query(SQLQuery, [id_orderan]);
 }
 
-const getFakturPembeli = (id_orderan) => {
-    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama, produk.harga, item_order.jumlah_order, produk.nama, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id WHERE orderan.id = ?;
+const getFakturPembeli = (id) => {
+    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama as nama_pengguna, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id WHERE orderan.id = ?;
 `;
-    return dbPool.query(SQLQuery, [id_orderan]);
+    return dbPool.query(SQLQuery, [id]);
 }
 
 const postFakturPembeli = (id_orderan, nomor_faktur) => {
@@ -355,4 +360,5 @@ module.exports = {
     deleteAdminMetodePembayaran,
     getAdminTampilVerifikasiPembayaran,
     updateAdminVerifikasiPembayaran,
+    getAdminTampilFakturOnline,
  }

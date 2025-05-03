@@ -252,6 +252,7 @@ const pembeliFaktur = async (req, res) => {
 
         // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
         const [data] = await dbModel.getFakturPembeli(id);
+        console.log("Data Faktur:", data);
 
         if (data.length === 0) {
             return res.status(404).json({ message: 'Faktur tidak ditemukan' });
@@ -1079,6 +1080,20 @@ const adminUpdateVerifikasiPembayaran = async (req, res) => {
     }
 }
 
+// fungsi untuk menampilkan data faktur online admin
+const adminTampilFakturOnline = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilFakturOnline();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data faktur online tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data faktur online berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -1127,4 +1142,5 @@ module.exports = {
     adminDeleteMetodePembayaran,
     adminTampilVerifikasiPembayaran,
     adminUpdateVerifikasiPembayaran,
+    adminTampilFakturOnline,
 }
