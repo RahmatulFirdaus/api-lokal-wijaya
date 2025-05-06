@@ -82,6 +82,8 @@ router.get('/adminTampilSemuaHasilTransaksiPenjualanHarian', apiController.admin
 router.get('/adminTampilMetodePembayaran', apiController.adminTampilMetodePembayaran);
 router.get('/adminTampilVerifikasiPembayaran', apiController.adminTampilVerifikasiPembayaran); //sepaket ama laporan, sama waktu dalam tampil ubahnya
 router.get('/adminTampilFakturOnline', apiController.adminTampilFakturOnline); //sepaket ama laporan
+//untuk tampilan produk pke api diatas aja
+router.get('/adminTampilUlasanProduk/:id', apiController.adminTampilUlasanProduk); //sepaket ama laporan
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);

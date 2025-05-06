@@ -1094,6 +1094,24 @@ const adminTampilFakturOnline = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data ulasan setiap produk
+const adminTampilUlasanProduk = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const [data] = await dbModel.getAdminTampilUlasanProduk(id);
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Ulasan produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data ulasan produk berhasil diambil', data: data.map((item) => ({
+            ...item,
+            tanggal_komentar: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+        })) });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -1143,4 +1161,5 @@ module.exports = {
     adminTampilVerifikasiPembayaran,
     adminUpdateVerifikasiPembayaran,
     adminTampilFakturOnline,
+    adminTampilUlasanProduk
 }
