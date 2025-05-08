@@ -998,16 +998,29 @@ const pembeliTampilKeranjang = async (req, res) => {
 //fungsi untuk menghapus keranjang pembeli
 const pembeliDeleteKeranjang = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const { id } = req.params;
 
-        // Hapus produk dari keranjang berdasarkan id_produk dan id_pengguna
+        // 1. Ambil data item_order berdasarkan id
+        const [rows] = await dbModel.getItemOrderById(id);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Item keranjang tidak ditemukan' });
+        }
+
+        const { id_varian_produk, jumlah_order } = rows[0];
+
+        // 2. Tambahkan kembali stok ke varian_produk
+        await dbModel.kembalikanStokVarianProduk(id_varian_produk, jumlah_order);
+
+        // 3. Hapus item_order
         await dbModel.deletePembeliKeranjang(id);
-        res.status(200).json({ message: 'Produk berhasil dihapus dari keranjang' });
+
+        res.status(200).json({ message: 'Produk berhasil dihapus dari keranjang dan stok dikembalikan' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
+
 
 //fungsi untuk admin menambahkan metode pembayaran
 const adminTambahMetodePembayaran = async (req, res) => {
