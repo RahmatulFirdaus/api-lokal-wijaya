@@ -84,6 +84,7 @@ router.get('/adminTampilVerifikasiPembayaran', apiController.adminTampilVerifika
 router.get('/adminTampilFakturOnline', apiController.adminTampilFakturOnline); //sepaket ama laporan
 //untuk tampilan produk pke api diatas aja
 router.get('/adminTampilUlasanProduk/:id', apiController.adminTampilUlasanProduk); //sepaket ama laporan
+router.get('/adminTampilProdukPerluRestok', apiController.adminTampilProdukPerluRestok); //sepaket ama laporan
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);

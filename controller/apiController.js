@@ -87,26 +87,42 @@ const daftar = async (req, res) => {
 // Fungsi untuk menambahkan produk ke keranjang
 const pembeliTambahKeranjang = async (req, res) => {
     try {
-        // Ambil data dari body request
         const { id_pengguna, id_varian_produk, jumlah_order } = req.body;
 
         console.log("ID Pengguna:", id_pengguna);
         console.log("ID Varian Produk:", id_varian_produk); 
         console.log("Jumlah Order:", jumlah_order);
 
-        // Validasi Pastikan semua field diisi
         if (!id_pengguna || !id_varian_produk || !jumlah_order) {
             return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
-        // Simpan data ke keranjang
+        // Ambil stok saat ini dari database
+        const [stokRows] = await dbModel.getStokVarianProduk(id_varian_produk);
+
+        if (stokRows.length === 0) {
+            return res.status(404).json({ message: 'Varian produk tidak ditemukan' });
+        }
+
+        const stokSaatIni = stokRows[0].stok;
+
+        // Cek apakah stok cukup
+        if (stokSaatIni < jumlah_order) {
+            return res.status(400).json({ message: `Stok tidak mencukupi. Stok saat ini: ${stokSaatIni}` });
+        }
+
+        // Simpan ke keranjang dan kurangi stok
         await dbModel.postPembeliTambahKeranjang(id_pengguna, id_varian_produk, jumlah_order);
-        res.status(201).json({ message: 'Produk berhasil ditambahkan ke keranjang' });
+        await dbModel.updateStokVarianProduk(id_varian_produk, jumlah_order);
+
+        return res.status(201).json({ message: 'Produk berhasil ditambahkan ke keranjang' });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
+
 
 // Fungsi untuk menghasilkan nomor faktur
 // Format: FAK-YYYYMMDDHHmmss-RANDOM_NUMBER
@@ -1112,6 +1128,20 @@ const adminTampilUlasanProduk = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data produk yang harus di restok oleh admin
+const adminTampilProdukPerluRestok = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilProdukPerluRestok();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data produk tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     login,
     daftar, 
@@ -1161,5 +1191,6 @@ module.exports = {
     adminTampilVerifikasiPembayaran,
     adminUpdateVerifikasiPembayaran,
     adminTampilFakturOnline,
-    adminTampilUlasanProduk
+    adminTampilUlasanProduk,
+    adminTampilProdukPerluRestok,
 }

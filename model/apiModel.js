@@ -1,6 +1,22 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getStokVarianProduk = (id_varian_produk) => {
+    const SQLQuery = `SELECT stok FROM varian_produk WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id_varian_produk]);
+};
+
+
+const updateStokVarianProduk = (id_varian_produk, jumlah_order) => {
+    const SQLQuery = `UPDATE varian_produk SET stok = stok - ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [jumlah_order, id_varian_produk]);
+};
+
+const getAdminTampilProdukPerluRestok = () => {
+    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, varian_produk.stok FROM varian_produk INNER JOIN produk ON varian_produk.id_produk = produk.id WHERE varian_produk.stok < 1 ORDER BY produk.nama ASC;`;
+    return dbPool.query(SQLQuery);
+}
+
 const getAdminTampilUlasanProduk = (id) => {
     const SQLQuery = `SELECT komentar.rating, komentar.komentar, komentar.tanggal_komentar, pengguna.nama from komentar join pengguna on pengguna.id = komentar.id_pengguna where komentar.id_produk = ?`;
     return dbPool.query(SQLQuery , [id]);
@@ -367,4 +383,7 @@ module.exports = {
     updateAdminVerifikasiPembayaran,
     getAdminTampilFakturOnline,
     getAdminTampilUlasanProduk,
+    getAdminTampilProdukPerluRestok,
+    updateStokVarianProduk,
+    getStokVarianProduk
  }
