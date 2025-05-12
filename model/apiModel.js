@@ -1,6 +1,21 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getAdminTampilPengirimanDetail = (id) => {
+    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, pengguna.nama, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE pengiriman.id = ?;`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const getAdminTampilPengiriman = () => {
+    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, pengguna.nama, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk;`;
+    return dbPool.query(SQLQuery);
+}
+
+const postPengiriman = (id_orderan, alamat_pengiriman) => {
+    const SQLQuery = `INSERT INTO pengiriman (id_orderan, alamat_pengiriman, status_pengiriman) VALUES (?, ?, 'diproses')`;
+    return dbPool.query(SQLQuery, [id_orderan, alamat_pengiriman]);
+}
+
 const getItemOrderById = (id) => {
     const SQLQuery = `SELECT id_varian_produk, jumlah_order FROM item_order WHERE id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -399,4 +414,7 @@ module.exports = {
     getStokVarianProduk,
     kembalikanStokVarianProduk,
     getItemOrderById,
+    postPengiriman,
+    getAdminTampilPengiriman,
+    getAdminTampilPengirimanDetail,
  }

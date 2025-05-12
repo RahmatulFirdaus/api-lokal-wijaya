@@ -141,7 +141,8 @@ const pembeliOrderProduk = async (req, res) => {
             id_metode_pembayaran, // ID metode pembayaran yang dipilih
             total_harga, // Total harga pesanan
             nama_pengirim, // Nama pengirim untuk pembayaran
-            bank_pengirim // Bank pengirim untuk pembayaran
+            bank_pengirim, // Bank pengirim untuk pembayaran
+            alamat_pengiriman // Alamat pengiriman untuk produk
         } = req.body;
 
         // Ambil nama file bukti transfer jika ada file yang diunggah
@@ -169,6 +170,9 @@ const pembeliOrderProduk = async (req, res) => {
 
         // Simpan data pembayaran ke tabel pembayaran
         await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, bukti_transfer);
+
+        //Simpan data ke tabel pengiriman
+        await dbModel.postPengiriman(id_order, alamat_pengiriman);
 
         const nomor_faktur = generateNomorFaktur();
         await dbModel.postFakturPembeli(id_order, nomor_faktur);
@@ -1155,6 +1159,97 @@ const adminTampilProdukPerluRestok = async (req, res) => {
     }
 }
 
+const adminTampilPengiriman = async (req, res) => {
+    try {
+        const [rows] = await dbModel.getAdminTampilPengiriman();
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Data pengiriman tidak ditemukan' });
+        }
+
+        const grouped = {};
+
+        rows.forEach(row => {
+            const {
+                id_pengiriman,
+                alamat_pengiriman,
+                status_pengiriman,
+                tanggal_pengiriman,
+                nama,
+                warna,
+                ukuran,
+                jumlah_order
+            } = row;
+
+            if (!grouped[id_pengiriman]) {
+                grouped[id_pengiriman] = {
+                    id_pengiriman,
+                    alamat_pengiriman,
+                    status_pengiriman,
+                    // Format tanggal menggunakan timeMoment
+                    tanggal_pengiriman: timeMoment(tanggal_pengiriman).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                    items: []
+                };
+            }
+
+            grouped[id_pengiriman].items.push({
+                nama,
+                warna,
+                ukuran,
+                jumlah_order
+            });
+        });
+
+        const result = Object.values(grouped);
+
+        return res.status(200).json({ message: 'Data pengiriman berhasil diambil', data: result });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+//fungsi untuk menampilkan data pengiriman detail
+const adminTampilPengirimanDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await dbModel.getAdminTampilPengirimanDetail(id);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Data pengiriman tidak ditemukan' });
+        }
+
+        const {
+            id_pengiriman,
+            alamat_pengiriman,
+            status_pengiriman,
+            tanggal_pengiriman
+        } = rows[0];
+
+        const formattedData = {
+            id_pengiriman,
+            alamat_pengiriman,
+            status_pengiriman,
+            tanggal_pengiriman: timeMoment(tanggal_pengiriman).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+            items: rows.map(item => ({
+                nama: item.nama,
+                warna: item.warna,
+                ukuran: item.ukuran,
+                jumlah_order: item.jumlah_order
+            }))
+        };
+
+        return res.status(200).json({
+            message: 'Detail pengiriman berhasil diambil',
+            data: formattedData
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
 module.exports = {
     login,
     daftar, 
@@ -1206,4 +1301,6 @@ module.exports = {
     adminTampilFakturOnline,
     adminTampilUlasanProduk,
     adminTampilProdukPerluRestok,
+    adminTampilPengiriman,
+    adminTampilPengirimanDetail,
 }
