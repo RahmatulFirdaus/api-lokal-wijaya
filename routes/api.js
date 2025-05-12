@@ -104,6 +104,7 @@ router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIz
 router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
+router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman
 
 
 //UPDATE diluar rancangan

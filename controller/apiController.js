@@ -1249,6 +1249,26 @@ const adminTampilPengirimanDetail = async (req, res) => {
     }
 };
 
+//fungsi untuk mengupdate status pengiriman
+const adminUpdatePengiriman = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { status_pengiriman } = req.body; // Mengambil status dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!status_pengiriman) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAdminStatusPengiriman(id, status_pengiriman);
+        res.status(200).json({ message: 'Status pengiriman berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -1303,4 +1323,5 @@ module.exports = {
     adminTampilProdukPerluRestok,
     adminTampilPengiriman,
     adminTampilPengirimanDetail,
+    adminUpdatePengiriman,
 }

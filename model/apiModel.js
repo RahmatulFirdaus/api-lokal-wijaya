@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateAdminStatusPengiriman = (id, status) => {   
+    const SQLQuery = `UPDATE pengiriman SET status_pengiriman = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [status, id]);
+}
+
 const getAdminTampilPengirimanDetail = (id) => {
     const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, pengguna.nama, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE pengiriman.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
@@ -417,4 +422,5 @@ module.exports = {
     postPengiriman,
     getAdminTampilPengiriman,
     getAdminTampilPengirimanDetail,
+    updateAdminStatusPengiriman,
  }
