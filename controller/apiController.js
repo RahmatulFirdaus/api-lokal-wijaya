@@ -1269,6 +1269,82 @@ const adminUpdatePengiriman = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data akun dari admin
+const adminTampilDataAkun = async (req, res) => {
+    try {
+        const [data] = await dbModel.getAdminTampilDataAkun();
+        if (data.length === 0) {
+            return res.status(404).json({ message: 'Data akun tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Data akun berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menambahkan data akun dari admin
+const adminTambahAkun = async (req, res) => {
+    try {
+        const { username, password, nama_lengkap, nomor_telepon, email, role } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        //cek apakah username / email sudah ada
+        const [existingUser] = await dbModel.getAdminCekDataAkun(username, email);
+        // Jika username sudah ada, kembalikan pesan error
+        if (existingUser.length > 0) {
+            return res.status(400).json({ message: 'Username sudah terdaftar' });
+        }
+
+
+        // Simpan data ke database
+        await dbModel.postAdminDataAkun(username, password, nama_lengkap, nomor_telepon, email);
+        res.status(201).json({ message: 'Akun berhasil ditambahkan' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk mengupdate data akun dari admin
+const adminUpdateAkun = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+        const { username, password, nama_lengkap, nomor_telepon, email, role } = req.body; // Mengambil data dari body request
+
+        // Validasi Pastikan semua field diisi
+        if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
+            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Simpan data ke database
+        await dbModel.updateAdminDataAkun(id, username, password, nama_lengkap, nomor_telepon, email, role);
+        res.status(200).json({ message: 'Akun berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menghapus data akun dari admin
+const adminDeleteAkun = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Hapus akun berdasarkan id
+        await dbModel.deleteAdminDataAkun(id);
+        res.status(200).json({ message: 'Akun berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
 
 module.exports = {
     login,
@@ -1324,4 +1400,7 @@ module.exports = {
     adminTampilPengiriman,
     adminTampilPengirimanDetail,
     adminUpdatePengiriman,
+    adminTampilDataAkun,
+    adminTambahAkun,
+    adminUpdateAkun,
 }

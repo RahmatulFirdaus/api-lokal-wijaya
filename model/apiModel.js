@@ -1,6 +1,31 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const deleteAdminDataAkun = (id) => {
+    const SQLQuery = `DELETE FROM pengguna WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
+const getAdminCekDataAkun = (username, email) => {
+    const SQLQuery = `SELECT * FROM pengguna WHERE username = ? OR email = ? LIMIT 1`;
+    return dbPool.query(SQLQuery, [username, email]);
+}
+
+const postAdminDataAkun = (username, password, nama, email, nomor_telp, role) => {
+    const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role) VALUES (?, ?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [username, password, nama, email, nomor_telp, role]);
+}
+
+const updateAdminDataAkun = (id, username, password, nama, email, nomor_telp, role) => {
+    const SQLQuery = `UPDATE pengguna SET username = ?, password = ?, nama = ?, email = ?, nomor_telp = ?, role = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [username, password, nama, email, nomor_telp, role, id]);
+}
+
+const getAdminTampilDataAkun = () => {
+    const SQLQuery = `SELECT * FROM pengguna`;
+    return dbPool.query(SQLQuery);
+}
+
 const updateAdminStatusPengiriman = (id, status) => {   
     const SQLQuery = `UPDATE pengiriman SET status_pengiriman = ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [status, id]);
@@ -423,4 +448,9 @@ module.exports = {
     getAdminTampilPengiriman,
     getAdminTampilPengirimanDetail,
     updateAdminStatusPengiriman,
+    getAdminTampilDataAkun,
+    postAdminDataAkun,
+    deleteAdminDataAkun,
+    updateAdminDataAkun,
+    getAdminCekDataAkun,
  }

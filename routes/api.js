@@ -87,6 +87,7 @@ router.get('/adminTampilUlasanProduk/:id', apiController.adminTampilUlasanProduk
 router.get('/adminTampilProdukPerluRestok', apiController.adminTampilProdukPerluRestok); //sepaket ama laporan
 router.get('/adminTampilPengiriman', apiController.adminTampilPengiriman); //sepaket ama laporan tapi ga semua
 router.get('/adminTampilPengirimanDetail/:id', apiController.adminTampilPengirimanDetail); //ID diisi dengan id pengiriman
+router.get('/adminTampilDataAkun', apiController.adminTampilDataAkun); //ID diisi dengan id pengiriman
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
@@ -95,6 +96,7 @@ router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
 //POST ADMIN
 router.post('/adminTambahProduk', apiController.adminTambahProduk);
 router.post('/adminTambahMetodePembayaran', apiController.adminTambahMetodePembayaran);
+router.post('/adminTambahAkun', apiController.adminTambahAkun); 
 
 //POST diluar rancangan
 router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEco);
@@ -105,7 +107,7 @@ router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk);
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman
-
+router.patch('/adminUpdateAkun', apiController.adminUpdateAkun); 
 
 //UPDATE diluar rancangan
 router.patch('/adminUpdateHargaProdukEco', apiController.adminUpdateHargaProdukEco); //id diisi dengan id produk
