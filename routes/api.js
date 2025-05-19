@@ -5,9 +5,9 @@ var router = express.Router();
 const apiController = require('../controller/apiController');
 
 //GET DEFAULT
-router.get('/login', apiController.login);
+router.post('/login', apiController.login);
 
-//GET TAMPILAN PRODUK LIST
+//GET TAMPILAN PRODUK LIST 
 router.get('/tampilProduk', apiController.tampilProduk);
 router.get('/tampilProdukDetail/:id', apiController.tampilProdukDetail); //id diisi dengan id produk
 router.get('/tampilUlasanProduk/:id', apiController.tampilUlasanProduk); //id diisi dengan id produk

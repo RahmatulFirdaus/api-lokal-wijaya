@@ -21,23 +21,23 @@ const login = async (req, res) => {
 
         // jika username dan password kosong, kita kembalikan error
         if (!username || !password) {
-            return res.status(400).json({ message: 'Username dan Password tidak ditemukan' });
+            return res.status(400).json({ pesan: 'Username dan Password tidak ditemukan' });
         }
         // jika username dan password ada, kita ambil data user dari database
         const [data] = await dbModel.getUsernameLogin(username);
         if (data.length === 0) {
-            return res.status(401).json({ message: 'Username tidak ditemukan' });
+            return res.status(401).json({ pesan: 'Username tidak ditemukan' });
         }
         // jika user ditemukan, kita cek passwordnya
         const user = data[0];
         if (user.password !== password) {
-            return res.status(401).json({ message: 'Password salah' });
+            return res.status(401).json({ pesan: 'Password salah' });
         }
 
         const token = generateToken(user);
 
         // jika password benar, kita kembalikan data user
-        return res.status(200).json({ message: 'Login berhasil',
+        return res.status(200).json({ pesan: 'Login berhasil',
              data: {
                 id: user.id,
                 username: user.username,
@@ -50,7 +50,7 @@ const login = async (req, res) => {
             });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -61,26 +61,32 @@ const daftar = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!username || !password || !nama || !email || !confirmPassword || !no_telp) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
+        console.log("Username:", username);
+        console.log("Password:", password);
+        console.log("Nama:", nama);
+        console.log("Email:", email);
+        console.log("Confirm Password:", confirmPassword);
+        console.log("No Telepon:", no_telp);
 
         // Validasi: Pastikan password dan confirmPassword cocok
         if (password !== confirmPassword) {
-            return res.status(400).json({ message: 'Password dan Konfirmasi Password tidak cocok' });
+            return res.status(400).json({ pesan: 'Password dan Konfirmasi Password tidak cocok' });
         }
 
         // Periksa apakah username atau email sudah terdaftar
         const [data] = await dbModel.validasiDaftar(username, email);
         if (data.length > 0) {
-            return res.status(400).json({ message: 'Username atau Email sudah terdaftar' });
+            return res.status(400).json({ pesan: 'Username atau Email sudah terdaftar' });
         }
         // Simpan data pengguna baru ke database
         await dbModel.postDaftar(username, password, nama, email, no_telp);
-        res.status(201).json({ message: 'Pendaftaran berhasil' });
+        res.status(201).json({ pesan: 'Pendaftaran berhasil' });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -94,32 +100,32 @@ const pembeliTambahKeranjang = async (req, res) => {
         console.log("Jumlah Order:", jumlah_order);
 
         if (!id_pengguna || !id_varian_produk || !jumlah_order) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Ambil stok saat ini dari database
         const [stokRows] = await dbModel.getStokVarianProduk(id_varian_produk);
 
         if (stokRows.length === 0) {
-            return res.status(404).json({ message: 'Varian produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Varian produk tidak ditemukan' });
         }
 
         const stokSaatIni = stokRows[0].stok;
 
         // Cek apakah stok cukup
         if (stokSaatIni < jumlah_order) {
-            return res.status(400).json({ message: `Stok tidak mencukupi. Stok saat ini: ${stokSaatIni}` });
+            return res.status(400).json({ pesan: `Stok tidak mencukupi. Stok saat ini: ${stokSaatIni}` });
         }
 
         // Simpan ke keranjang dan kurangi stok
         await dbModel.postPembeliTambahKeranjang(id_pengguna, id_varian_produk, jumlah_order);
         await dbModel.updateStokVarianProduk(id_varian_produk, jumlah_order);
 
-        return res.status(201).json({ message: 'Produk berhasil ditambahkan ke keranjang' });
+        return res.status(201).json({ pesan: 'Produk berhasil ditambahkan ke keranjang' });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -152,7 +158,7 @@ const pembeliOrderProduk = async (req, res) => {
         const [data] = await dbModel.cekIdOrderKosong(id_pengguna);
         if (data.length === 0) {
             // Jika tidak ada item order yang belum dibayar, kembalikan respons error
-            return res.status(401).json({ message: 'Tidak ada item order yang belum dibayar' });
+            return res.status(401).json({ pesan: 'Tidak ada item order yang belum dibayar' });
         }
 
         // Simpan data ke tabel order_produk
@@ -178,11 +184,11 @@ const pembeliOrderProduk = async (req, res) => {
         await dbModel.postFakturPembeli(id_order, nomor_faktur);
 
         // Kembalikan respons sukses
-        res.status(201).json({ message: 'Produk berhasil dipesan' });
+        res.status(201).json({ pesan: 'Produk berhasil dipesan' });
     } catch (error) {
         // Tangani error dan kembalikan respons error
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -195,14 +201,14 @@ const pembeliRiwayatTransaksi = async (req, res) => {
         const [data] = await dbModel.getPembeliRiwayatTransaksi(id);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Riwayat transaksi tidak ditemukan' });
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Riwayat transaksi berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -215,14 +221,14 @@ const pembeliRiwayatTransaksiDetail = async (req, res) => {
         const [data] = await dbModel.getPembeliRiwayatTransaksiDetail(id);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Riwayat transaksi tidak ditemukan' });
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Riwayat transaksi berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -236,14 +242,14 @@ const pembeliUlasanProduk = async (req, res) => {
         console.log("Data:", data);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Transaksi tidak ditemukan' });
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ message: 'Transaksi ditemukan', data: data });
+        return res.status(200).json({ pesan: 'Transaksi ditemukan', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -254,15 +260,15 @@ const pembeliTambahKomentar = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!id_produk || !id_pengguna || !rating || !komentar) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data komentar ke database
         await dbModel.postPembeliTambahKomentar(id_produk, id_pengguna, rating, komentar);
-        res.status(201).json({ message: 'Ulasan berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Ulasan berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -275,14 +281,14 @@ const pembeliFaktur = async (req, res) => {
         console.log("Data Faktur:", data);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Faktur tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Faktur tidak ditemukan' });
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ message: 'Faktur berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Faktur berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -298,14 +304,14 @@ const getPengirimanData = async (req, res) => {
         console.log("Data Pengiriman:", data);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Riwayat transaksi tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Riwayat transaksi tidak ditemukan' });
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ message: 'Riwayat transaksi berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Riwayat transaksi berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -317,15 +323,15 @@ const pembeliProfilePassword = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!password) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAkunPembeliPassword(id, password);
-        res.status(200).json({ message: 'Password berhasil diupdate' });
+        res.status(200).json({ pesan: 'Password berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -337,15 +343,15 @@ const pembeliProfileNama = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!nama) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAkunPembeliNama(id, nama);
-        res.status(200).json({ message: 'Nama berhasil diupdate' });
+        res.status(200).json({ pesan: 'Nama berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -357,15 +363,15 @@ const pembeliProfileNomorTelepon = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!nomor_telp) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAkunPembeliNomorTelepon(id, nomor_telp);
-        res.status(200).json({ message: 'Nomor telepon berhasil diupdate' });
+        res.status(200).json({ pesan: 'Nomor telepon berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -377,15 +383,15 @@ const pembeliProfileEmail = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!email) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAkunPembeliEmail(id, email);
-        res.status(200).json({ message: 'Email berhasil diupdate' });
+        res.status(200).json({ pesan: 'Email berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -394,12 +400,12 @@ const tampilProduk = async (req, res) => {
     try {
         const [data] = await dbModel.getTampilProduk();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -409,12 +415,12 @@ const tampilProdukDetail = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const [data] = await dbModel.getTampilProdukDetail(id);
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -424,12 +430,12 @@ const tampilUlasanProduk = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const [data] = await dbModel.getTampilUlasanProduk(id);
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Ulasan produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Ulasan produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data ulasan produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data ulasan produk berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -439,12 +445,12 @@ const karyawanTampilPengajuanIzin = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const [data] = await dbModel.getPengajuanIzinKaryawan(id);
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Pengajuan izin tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Pengajuan izin tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data pengajuan izin berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data pengajuan izin berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -455,15 +461,15 @@ const karyawanTambahPengajuanIzin = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!id_pengguna || !tipe_izin || !deskripsi || !tanggal_mulai || !tanggal_akhir) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.postKaryawanTambahPengajuanIzin(id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir);
-        res.status(201).json({ message: 'Pengajuan izin berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Pengajuan izin berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -474,23 +480,23 @@ const karyawanTambahAbsensi = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!id_pengguna) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Cek apakah karyawan sudah absen hari ini
         const [data] = await dbModel.cekAbensiKaryawan(id_pengguna);
         if (data.length > 0) {
-            return res.status(400).json({ message: 'Anda sudah melakukan absen hari ini' });
+            return res.status(400).json({ pesan: 'Anda sudah melakukan absen hari ini' });
         }
         console.log("ID Pengguna:", id_pengguna);
         console.log("Data:", data);
 
         // Simpan data ke database
         await dbModel.postKaryawanTambahAbsensi(id_pengguna);
-        res.status(201).json({ message: 'Absensi berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Absensi berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -499,12 +505,12 @@ const karyawanTambahProdukPenjualanOffline = async (req, res) => {
     try {
         const [data] = await dbModel.getKaryawanPenjualanOffline();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data penjualan offline tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data penjualan offline tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data penjualan offline berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data penjualan offline berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -515,15 +521,15 @@ const karyawanTambahPenjualanOffline = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!id_varian_produk || !id_pengguna) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.postKaryawanTambahPenjualanOffline(id_varian_produk, id_pengguna);
-        res.status(201).json({ message: 'Penjualan offline berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Penjualan offline berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -532,12 +538,12 @@ const adminTampilKaryawanAbsensi = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilAbsensiKaryawan();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data absensi karyawan tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data absensi karyawan tidak ditemukan' });
         }
 
         // Perbaikan pada penggunaan map
         return res.status(200).json({
-            message: 'Data absensi karyawan berhasil diambil',
+            pesan: 'Data absensi karyawan berhasil diambil',
             data: data.map((item) => ({
                 ...item,
                 tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -545,7 +551,7 @@ const adminTampilKaryawanAbsensi = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -554,13 +560,13 @@ const adminTampilKaryawanIzin = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilPengajuanIzinKaryawan();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data pengajuan izin karyawan tidak ditemukan' });
         }
         
 
         // Format tanggal pada setiap data pengajuan izin
         return res.status(200).json({
-            message: 'Data pengajuan izin karyawan berhasil diambil',
+            pesan: 'Data pengajuan izin karyawan berhasil diambil',
             data: data.map((item) => ({
                 ...item,
                 tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -571,7 +577,7 @@ const adminTampilKaryawanIzin = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -581,9 +587,9 @@ const adminTampilKaryawanIzinDetail = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const [data] = await dbModel.getAdminTampilPengajuanIzinKaryawanDetail(id);
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data pengajuan izin karyawan tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data pengajuan izin karyawan tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data pengajuan izin karyawan berhasil diambil',
+        return res.status(200).json({ pesan: 'Data pengajuan izin karyawan berhasil diambil',
             data: data.map((item) => ({
                 ...item,
                 tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -592,7 +598,7 @@ const adminTampilKaryawanIzinDetail = async (req, res) => {
          });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -604,15 +610,15 @@ const adminUpdateKaryawanIzin = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!status) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAdminStatusPengajuanIzinKaryawan(id, status);
-        res.status(200).json({ message: 'Status pengajuan izin berhasil diupdate' });
+        res.status(200).json({ pesan: 'Status pengajuan izin berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -623,7 +629,7 @@ const adminTambahProduk = async (req, res) => {
 
         // Validasi input sederhana
         if (!nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
-            return res.status(400).json({ message: 'Data produk tidak lengkap atau format varian salah.' });
+            return res.status(400).json({ pesan: 'Data produk tidak lengkap atau format varian salah.' });
         }
 
         // Tambah produk
@@ -636,10 +642,10 @@ const adminTambahProduk = async (req, res) => {
             await dbModel.postAdminTambahVarianProduk(id_produk, warna, ukuran, stok);
         }
 
-        res.status(201).json({ message: 'Produk dan varian berhasil ditambahkan.' });
+        res.status(201).json({ pesan: 'Produk dan varian berhasil ditambahkan.' });
     } catch (error) {
         console.error('Error saat menambahkan produk:', error);
-        res.status(500).json({ message: 'Terjadi kesalahan saat menambahkan produk.' });
+        res.status(500).json({ pesan: 'Terjadi kesalahan saat menambahkan produk.' });
     }
 }
 
@@ -650,7 +656,7 @@ const adminUpdateProduk = async (req, res) => {
         const { nama_produk, deskripsi, harga_produk, link_gambar, varian } = req.body;
 
         if (!id || !nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
-            return res.status(400).json({ message: 'Data tidak lengkap atau format salah.' });
+            return res.status(400).json({ pesan: 'Data tidak lengkap atau format salah.' });
         }
 
         // Update data utama produk
@@ -666,10 +672,10 @@ const adminUpdateProduk = async (req, res) => {
             }
         }
 
-        res.status(200).json({ message: 'Produk dan varian berhasil diperbarui.' });
+        res.status(200).json({ pesan: 'Produk dan varian berhasil diperbarui.' });
     } catch (error) {
         console.error('Error saat update produk:', error);
-        res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui produk.' });
+        res.status(500).json({ pesan: 'Terjadi kesalahan saat memperbarui produk.' });
     }
 };
 
@@ -679,13 +685,13 @@ const adminTampilUpdateProduk = async (req, res) => {
     try {
         const [produkResult] = await dbModel.getAdminProduk(id);
         if (produkResult.length === 0) {
-            return res.status(404).json({ message: 'Data produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data produk tidak ditemukan' });
         }
 
         const [varianResult] = await dbModel.getAdminVarianProduk(id);
 
         return res.status(200).json({
-            message: 'Data produk berhasil diambil',
+            pesan: 'Data produk berhasil diambil',
             data: {
                 produk: produkResult[0], // karena hanya satu produk berdasarkan ID
                 varian: varianResult
@@ -693,7 +699,7 @@ const adminTampilUpdateProduk = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -704,10 +710,10 @@ const adminDeleteProduk = async (req, res) => {
 
         // Hapus produk dari database
         await dbModel.deleteAdminProduk(id);
-        res.status(200).json({ message: 'Produk berhasil dihapus' });
+        res.status(200).json({ pesan: 'Produk berhasil dihapus' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -718,10 +724,10 @@ const adminDeleteVarianProduk = async (req, res) => {
 
         // Hapus varian produk dari database
         await dbModel.deleteAdminVarianProduk(id);
-        res.status(200).json({ message: 'Varian produk berhasil dihapus' });
+        res.status(200).json({ pesan: 'Varian produk berhasil dihapus' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -730,9 +736,9 @@ const adminTampilHasilTransaksiOnline = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilHasilTransaksiOnline();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data transaksi online tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data transaksi online tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data transaksi online berhasil diambil', data: 
+        return res.status(200).json({ pesan: 'Data transaksi online berhasil diambil', data: 
             data.map((item) => ({
                 ...item,
                 tanggal_order: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -740,7 +746,7 @@ const adminTampilHasilTransaksiOnline = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -749,12 +755,12 @@ const adminTampilProdukEco = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilProdukEco();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -765,18 +771,18 @@ const adminTambahHargaProdukEco = async (req, res) => {
 
         if (!id_produk || !harga_asli) {
             return res.status(400).json({
-                message: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
+                pesan: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
             });
         }
         await dbModel.postAdminTambahProdukEco(id_produk,harga_asli);
 
         res.status(201).json({
-            message: 'Berhasil ditambahkan',
+            pesan: 'Berhasil ditambahkan',
         });
     } catch (error) {
         console.error('Error saat menambahkan produk_eco:', error);
         res.status(500).json({
-            message: 'Terjadi kesalahan saat menambahkan produk_eco',
+            pesan: 'Terjadi kesalahan saat menambahkan produk_eco',
         });
     }
 }
@@ -791,18 +797,18 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 
         if (!id_produk || !harga_asli) {
             return res.status(400).json({
-                message: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
+                pesan: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
             });
         }
         await dbModel.updateAdminUbahProdukEco(id_produk,harga_asli);
 
         res.status(201).json({
-            message: 'Berhasil diubah',
+            pesan: 'Berhasil diubah',
         });
     } catch (error) {
         console.error('Error saat mengubah produk_eco:', error);
         res.status(500).json({
-            message: 'Terjadi kesalahan saat mengubah produk_eco',
+            pesan: 'Terjadi kesalahan saat mengubah produk_eco',
         });
     }
 }
@@ -812,10 +818,10 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 //     try {
 //         const [data] = await dbModel.getAdminTampilPenjualanHarianOnline();
 //         if (data.length === 0) {
-//             return res.status(404).json({ message: 'Data transaksi online tidak ditemukan' });
+//             return res.status(404).json({ pesan: 'Data transaksi online tidak ditemukan' });
 //         }
         
-//         return res.status(200).json({ message: 'Data transaksi online berhasil diambil', data:
+//         return res.status(200).json({ pesan: 'Data transaksi online berhasil diambil', data:
 //             data.map((item) => ({
 //                 ...item,
 //                 tanggal_order: timeMoment(item.tanggal_order).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -823,7 +829,7 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 //          });
 //     } catch (error) {
 //         console.error(error);
-//         return res.status(500).json({ message: 'Internal server error' });
+//         return res.status(500).json({ pesan: 'Internal server error' });
 //     }
 // }
 
@@ -832,10 +838,10 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 //     try {
 //         const [data] = await dbModel.getAdminTampilPenjualanHarianOffline();
 //         if (data.length === 0) {
-//             return res.status(404).json({ message: 'Data transaksi offline tidak ditemukan' });
+//             return res.status(404).json({ pesan: 'Data transaksi offline tidak ditemukan' });
 //         }
         
-//         return res.status(200).json({ message: 'Data transaksi offline berhasil diambil', data:
+//         return res.status(200).json({ pesan: 'Data transaksi offline berhasil diambil', data:
 //             data.map((item) => ({
 //                 ...item,
 //                 tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
@@ -843,7 +849,7 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 //          });
 //     } catch (error) {
 //         console.error(error);
-//         return res.status(500).json({ message: 'Internal server error' });
+//         return res.status(500).json({ pesan: 'Internal server error' });
 //     }
 // }
 
@@ -874,14 +880,14 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
       }));
   
       return res.status(200).json({
-        message: 'Data transaksi berhasil diambil',
+        pesan: 'Data transaksi berhasil diambil',
         data_online: formattedDataOnline,
         data_offline: formattedDataOffline,
       });
       
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ pesan: 'Internal server error' });
     }
   };
   
@@ -892,7 +898,7 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
         const [offlineResults] = await dbModel.getAdminLaporanTotalHargaOffline();
 
         if (onlineResults.length === 0 && offlineResults.length === 0) {
-            return res.status(404).json({ message: 'Data laporan tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data laporan tidak ditemukan' });
         }
 
         // Gabungkan hasil laporan berdasarkan tanggal
@@ -955,13 +961,13 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
         }
 
         return res.status(200).json({
-            message: 'Data laporan berhasil diambil',
+            pesan: 'Data laporan berhasil diambil',
             data: laporan
         });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -970,12 +976,12 @@ const adminTampilMetodePembayaran = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminMetodePembayaran();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data metode pembayaran tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data metode pembayaran tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data metode pembayaran berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data metode pembayaran berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -988,14 +994,14 @@ const pembeliTampilKeranjang = async (req, res) => {
         const [data] = await dbModel.getPembeliTampilKeranjang(id);
 
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Keranjang tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Keranjang tidak ditemukan' });
         }
 
         // Mengembalikan data keranjang
-        return res.status(200).json({ message: 'Keranjang berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Keranjang berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1007,7 +1013,7 @@ const pembeliDeleteKeranjang = async (req, res) => {
         // 1. Ambil data item_order berdasarkan id
         const [rows] = await dbModel.getItemOrderById(id);
         if (rows.length === 0) {
-            return res.status(404).json({ message: 'Item keranjang tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Item keranjang tidak ditemukan' });
         }
 
         const { id_varian_produk, jumlah_order } = rows[0];
@@ -1018,10 +1024,10 @@ const pembeliDeleteKeranjang = async (req, res) => {
         // 3. Hapus item_order
         await dbModel.deletePembeliKeranjang(id);
 
-        res.status(200).json({ message: 'Produk berhasil dihapus dari keranjang dan stok dikembalikan' });
+        res.status(200).json({ pesan: 'Produk berhasil dihapus dari keranjang dan stok dikembalikan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -1033,15 +1039,15 @@ const adminTambahMetodePembayaran = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!nama_metode || !deskripsi ) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.postAdminMetodePembayaran(nama_metode, deskripsi);
-        res.status(201).json({ message: 'Metode pembayaran berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Metode pembayaran berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1053,15 +1059,15 @@ const adminUpdateMetodePembayaran = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!nama_metode || !deskripsi) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAdminMetodePembayaran(id, nama_metode, deskripsi);
-        res.status(200).json({ message: 'Metode pembayaran berhasil diupdate' });
+        res.status(200).json({ pesan: 'Metode pembayaran berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1072,10 +1078,10 @@ const adminDeleteMetodePembayaran = async (req, res) => {
 
         // Hapus metode pembayaran berdasarkan id
         await dbModel.deleteAdminMetodePembayaran(id);
-        res.status(200).json({ message: 'Metode pembayaran berhasil dihapus' });
+        res.status(200).json({ pesan: 'Metode pembayaran berhasil dihapus' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1084,12 +1090,12 @@ const adminTampilVerifikasiPembayaran = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilVerifikasiPembayaran();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data verifikasi pembayaran tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data verifikasi pembayaran tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data verifikasi pembayaran berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data verifikasi pembayaran berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1101,15 +1107,15 @@ const adminUpdateVerifikasiPembayaran = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!status) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAdminVerifikasiPembayaran(id, status, catatan_admin);
-        res.status(200).json({ message: 'Status verifikasi pembayaran berhasil diupdate' });
+        res.status(200).json({ pesan: 'Status verifikasi pembayaran berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1118,12 +1124,12 @@ const adminTampilFakturOnline = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilFakturOnline();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data faktur online tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data faktur online tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data faktur online berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data faktur online berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1133,15 +1139,15 @@ const adminTampilUlasanProduk = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const [data] = await dbModel.getAdminTampilUlasanProduk(id);
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Ulasan produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Ulasan produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data ulasan produk berhasil diambil', data: data.map((item) => ({
+        return res.status(200).json({ pesan: 'Data ulasan produk berhasil diambil', data: data.map((item) => ({
             ...item,
             tanggal_komentar: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
         })) });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1150,12 +1156,12 @@ const adminTampilProdukPerluRestok = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilProdukPerluRestok();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data produk tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data produk tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1164,7 +1170,7 @@ const adminTampilPengiriman = async (req, res) => {
         const [rows] = await dbModel.getAdminTampilPengiriman();
 
         if (rows.length === 0) {
-            return res.status(404).json({ message: 'Data pengiriman tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data pengiriman tidak ditemukan' });
         }
 
         const grouped = {};
@@ -1202,10 +1208,10 @@ const adminTampilPengiriman = async (req, res) => {
 
         const result = Object.values(grouped);
 
-        return res.status(200).json({ message: 'Data pengiriman berhasil diambil', data: result });
+        return res.status(200).json({ pesan: 'Data pengiriman berhasil diambil', data: result });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -1216,7 +1222,7 @@ const adminTampilPengirimanDetail = async (req, res) => {
         const [rows] = await dbModel.getAdminTampilPengirimanDetail(id);
 
         if (rows.length === 0) {
-            return res.status(404).json({ message: 'Data pengiriman tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data pengiriman tidak ditemukan' });
         }
 
         const {
@@ -1240,12 +1246,12 @@ const adminTampilPengirimanDetail = async (req, res) => {
         };
 
         return res.status(200).json({
-            message: 'Detail pengiriman berhasil diambil',
+            pesan: 'Detail pengiriman berhasil diambil',
             data: formattedData
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
 
@@ -1257,15 +1263,15 @@ const adminUpdatePengiriman = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!status_pengiriman) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAdminStatusPengiriman(id, status_pengiriman);
-        res.status(200).json({ message: 'Status pengiriman berhasil diupdate' });
+        res.status(200).json({ pesan: 'Status pengiriman berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1274,12 +1280,12 @@ const adminTampilDataAkun = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilDataAkun();
         if (data.length === 0) {
-            return res.status(404).json({ message: 'Data akun tidak ditemukan' });
+            return res.status(404).json({ pesan: 'Data akun tidak ditemukan' });
         }
-        return res.status(200).json({ message: 'Data akun berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data akun berhasil diambil', data: data });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1290,23 +1296,23 @@ const adminTambahAkun = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         //cek apakah username / email sudah ada
         const [existingUser] = await dbModel.getAdminCekDataAkun(username, email);
         // Jika username sudah ada, kembalikan pesan error
         if (existingUser.length > 0) {
-            return res.status(400).json({ message: 'Username sudah terdaftar' });
+            return res.status(400).json({ pesan: 'Username sudah terdaftar' });
         }
 
 
         // Simpan data ke database
         await dbModel.postAdminDataAkun(username, password, nama_lengkap, nomor_telepon, email);
-        res.status(201).json({ message: 'Akun berhasil ditambahkan' });
+        res.status(201).json({ pesan: 'Akun berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1318,15 +1324,15 @@ const adminUpdateAkun = async (req, res) => {
 
         // Validasi Pastikan semua field diisi
         if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
-            return res.status(400).json({ message: 'Harap Mengisikan Data dengan Lengkap' });
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
         await dbModel.updateAdminDataAkun(id, username, password, nama_lengkap, nomor_telepon, email, role);
-        res.status(200).json({ message: 'Akun berhasil diupdate' });
+        res.status(200).json({ pesan: 'Akun berhasil diupdate' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
@@ -1337,10 +1343,10 @@ const adminDeleteAkun = async (req, res) => {
 
         // Hapus akun berdasarkan id
         await dbModel.deleteAdminDataAkun(id);
-        res.status(200).json({ message: 'Akun berhasil dihapus' });
+        res.status(200).json({ pesan: 'Akun berhasil dihapus' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ pesan: 'Internal server error' });
     }
 }
 
