@@ -60,7 +60,8 @@ router.delete('/pembeliDeleteKeranjang/:id', apiController.pembeliDeleteKeranjan
 
 
 //UPLOAD / POST PEMBELI
-router.post('/upload', upload.single('bukti_transfer'), apiController.pembeliOrderProduk);
+router.post('/upload', upload.array('bukti_transfer', 5), apiController.pembeliOrderProduk);
+
 
 
 
@@ -94,7 +95,7 @@ router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
 
 
 //POST ADMIN
-router.post('/adminTambahProduk', apiController.adminTambahProduk);
+router.post('/adminTambahProduk', upload.array('link_gambar', 5), apiController.adminTambahProduk);
 router.post('/adminTambahMetodePembayaran', apiController.adminTambahMetodePembayaran);
 router.post('/adminTambahAkun', apiController.adminTambahAkun); 
 

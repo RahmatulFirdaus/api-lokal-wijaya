@@ -141,56 +141,44 @@ const generateNomorFaktur = () => {
 // Fungsi untuk menangani proses pemesanan produk oleh pembeli
 const pembeliOrderProduk = async (req, res) => {
     try {
-        // Ambil data dari body request
         const {
-            id_pengguna, // ID pengguna yang melakukan pemesanan
-            id_metode_pembayaran, // ID metode pembayaran yang dipilih
-            total_harga, // Total harga pesanan
-            nama_pengirim, // Nama pengirim untuk pembayaran
-            bank_pengirim, // Bank pengirim untuk pembayaran
-            alamat_pengiriman // Alamat pengiriman untuk produk
+            id_pengguna,
+            id_metode_pembayaran,
+            total_harga,
+            nama_pengirim,
+            bank_pengirim,
+            alamat_pengiriman
         } = req.body;
 
-        // Ambil nama file bukti transfer jika ada file yang diunggah
-        const bukti_transfer = req.file ? req.file.filename : null;
+        // Ambil banyak file bukti transfer
+        const bukti_transfer_files = req.files || [];
+        const bukti_transfer_filenames = bukti_transfer_files.map(file => file.filename);
 
-        // Mengecek apakah ada item order yang belum dibayar untuk pengguna
         const [data] = await dbModel.cekIdOrderKosong(id_pengguna);
         if (data.length === 0) {
-            // Jika tidak ada item order yang belum dibayar, kembalikan respons error
             return res.status(401).json({ pesan: 'Tidak ada item order yang belum dibayar' });
         }
 
-        // Simpan data ke tabel order_produk
         const [resultOrder] = await dbModel.postPembeliOrderProduk(id_metode_pembayaran, total_harga);
-
-        console.log("Berhasil Simpan Order Produk");
-
-        // Ambil ID order yang baru saja disimpan
         const id_order = resultOrder.insertId;
 
-        // Update ID order di tabel item_order untuk menghubungkan item dengan order
         await dbModel.updateItemOrder(id_order, id_pengguna);
-
-        console.log("Berhasil Update Order Produk");
-
-        // Simpan data pembayaran ke tabel pembayaran
-        await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, bukti_transfer);
-
-        //Simpan data ke tabel pengiriman
         await dbModel.postPengiriman(id_order, alamat_pengiriman);
-
         const nomor_faktur = generateNomorFaktur();
         await dbModel.postFakturPembeli(id_order, nomor_faktur);
 
-        // Kembalikan respons sukses
+        // Simpan semua bukti transfer (asumsikan menyimpan satu per entry)
+        for (const filename of bukti_transfer_filenames) {
+            await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, filename);
+        }
+
         res.status(201).json({ pesan: 'Produk berhasil dipesan' });
     } catch (error) {
-        // Tangani error dan kembalikan respons error
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
+
 
 // Fungsi untuk mengambil riwayat transaksi pembeli berdasarkan ID pengguna
 const pembeliRiwayatTransaksi = async (req, res) => {
@@ -625,19 +613,24 @@ const adminUpdateKaryawanIzin = async (req, res) => {
 //fungsi untuk menambahkan produk dan varian produk oleh admin
 const adminTambahProduk = async (req, res) => {
     try {
-        const { nama_produk, deskripsi, harga_produk, link_gambar, varian } = req.body;
+        const { nama_produk, deskripsi, harga_produk, varian } = req.body;
 
-        // Validasi input sederhana
-        if (!nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
-            return res.status(400).json({ pesan: 'Data produk tidak lengkap atau format varian salah.' });
+        // Ambil nama file gambar yang di-upload
+        const files = req.files || [];
+        const link_gambar = files.map(file => file.filename); // array of filenames
+
+        // Validasi input
+        if (!nama_produk || !deskripsi || !harga_produk || !Array.isArray(varian) || link_gambar.length === 0) {
+            return res.status(400).json({ pesan: 'Data produk tidak lengkap atau format salah.' });
         }
 
-        // Tambah produk
-        const result = await dbModel.postAdminTambahProduk(nama_produk, deskripsi, harga_produk, link_gambar);
-        const id_produk = result[0].insertId; // Ambil ID produk yang baru dimasukkan
+        // Simpan produk (gunakan array gambar)
+        const result = await dbModel.postAdminTambahProduk(nama_produk, deskripsi, harga_produk, JSON.stringify(link_gambar));
+        const id_produk = result[0].insertId;
 
-        // Tambah varian-varian
-        for (const v of varian) {
+        // Simpan varian
+        const parsedVarian = typeof varian === 'string' ? JSON.parse(varian) : varian; // jika frontend mengirim varian sebagai JSON string
+        for (const v of parsedVarian) {
             const { warna, ukuran, stok } = v;
             await dbModel.postAdminTambahVarianProduk(id_produk, warna, ukuran, stok);
         }
@@ -647,7 +640,8 @@ const adminTambahProduk = async (req, res) => {
         console.error('Error saat menambahkan produk:', error);
         res.status(500).json({ pesan: 'Terjadi kesalahan saat menambahkan produk.' });
     }
-}
+};
+
 
 //fungsi untuk mengubah produk dan varian produk oleh admin
 const adminUpdateProduk = async (req, res) => {
@@ -1089,15 +1083,41 @@ const adminDeleteMetodePembayaran = async (req, res) => {
 const adminTampilVerifikasiPembayaran = async (req, res) => {
     try {
         const [data] = await dbModel.getAdminTampilVerifikasiPembayaran();
+
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Data verifikasi pembayaran tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data verifikasi pembayaran berhasil diambil', data: data });
+
+        // Proses pengelompokan berdasarkan id_orderan
+        const groupedData = Object.values(data.reduce((acc, item) => {
+            const id = item.id_orderan;
+
+            if (!acc[id]) {
+                acc[id] = {
+                    id_orderan: id,
+                    status: item.status,
+                    catatan_admin: item.catatan_admin,
+                    nama_pengirim: item.nama_pengirim,
+                    bank_pengirim: item.bank_pengirim,
+                    tanggal_transfer: timeMoment(item.tanggal_transfer).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                    bukti_transfer: [item.bukti_transfer]
+                };
+            } else {
+                acc[id].bukti_transfer.push(item.bukti_transfer);
+            }
+
+            return acc;
+        }, {}));
+
+        return res.status(200).json({ 
+            pesan: 'Data verifikasi pembayaran berhasil diambil', 
+            data: groupedData 
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
-}
+};
 
 //fungsi untuk mengupdate status verifikasi pembayaran
 const adminUpdateVerifikasiPembayaran = async (req, res) => {
