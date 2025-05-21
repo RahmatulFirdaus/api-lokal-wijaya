@@ -400,17 +400,42 @@ const tampilProduk = async (req, res) => {
 //Fungsi untuk tampil produk detail
 const tampilProdukDetail = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
-        const [data] = await dbModel.getTampilProdukDetail(id);
-        if (data.length === 0) {
+        const { id } = req.params;
+        const [rows] = await dbModel.getTampilProdukDetail(id);
+
+        if (rows.length === 0) {
             return res.status(404).json({ pesan: 'Produk tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
+
+        // Ambil data produk dari baris pertama (karena semua baris punya info produk yg sama)
+        const produk = {
+            id: rows[0].id,
+            nama: rows[0].nama_produk,
+            deskripsi: rows[0].deskripsi_produk,
+            harga: rows[0].harga_produk,
+            link_gambar: rows[0].link_gambar_produk,
+            kategori: rows[0].kategori_produk,
+            created_at: rows[0].created_at,
+            varian: rows.map(row => ({
+                id_varian: row.id_varian,
+                warna: row.warna_produk,
+                ukuran: row.ukuran_produk,
+                stok: row.stok_produk,
+                link_gambar_varian: row.link_gambar_varian
+            }))
+        };
+
+        return res.status(200).json({
+            pesan: 'Data produk berhasil diambil',
+            data: produk
+        });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
-}
+};
+
 
 // Fungsi untuk menampilkan ulasan produk
 const tampilUlasanProduk = async (req, res) => {
