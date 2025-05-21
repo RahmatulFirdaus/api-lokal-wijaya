@@ -189,9 +189,9 @@ const getAdminVarianProduk = (id) => {
     return dbPool.query(SQLQuery, [id]);
 }
 
-const updateVarianProduk = (id_varian, warna, ukuran, stok) => {
-    const SQLQuery = `UPDATE varian_produk SET warna = ?, ukuran = ?, stok = ? WHERE id = ?`;
-    return dbPool.query(SQLQuery, [warna, ukuran, stok, id_varian]);
+const updateVarianProduk = (id_varian, warna, ukuran, stok, link_gambar) => {
+    const SQLQuery = `UPDATE varian_produk SET warna = ?, ukuran = ?, stok = ?, link_gambar_varian = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [warna, ukuran, stok, link_gambar, id_varian]);
 };
 
 const updateProduk = (id, nama_produk, deskripsi_produk, harga_produk, link_gambar) => {
@@ -199,16 +199,18 @@ const updateProduk = (id, nama_produk, deskripsi_produk, harga_produk, link_gamb
     return dbPool.query(SQLQuery, [nama_produk, deskripsi_produk, harga_produk, link_gambar, id]);
 };
 
-const insertVarianBaru = (id_produk, warna, ukuran, stok) => {
-    const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok]);
+const insertVarianBaru = (id_produk, warna, ukuran, stok, link_gambar) => {
+    const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok, link_gambar_varian) VALUES (?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok, link_gambar]);
 };
 
+const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok, gambar) => {
+    const SQLQuery = `
+        INSERT INTO varian_produk (id_produk, warna, ukuran, stok, link_gambar_varian)
+        VALUES (?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok, gambar]);
+};
 
-const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok) => {
-    const SQLQuery = `INSERT INTO varian_produk (id_produk, warna, ukuran, stok) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok]);
-}
 
 const postAdminTambahProduk = (nama_produk, deskripsi, harga_produk, link_gambar) => {
     const SQLQuery = `INSERT INTO produk (nama, deskripsi, harga, link_gambar) VALUES (?, ?, ?, ?)`;

@@ -95,7 +95,7 @@ router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
 
 
 //POST ADMIN
-router.post('/adminTambahProduk', upload.array('link_gambar', 5), apiController.adminTambahProduk);
+router.post('/adminTambahProduk', upload.array('link_gambar', 10), apiController.adminTambahProduk);
 router.post('/adminTambahMetodePembayaran', apiController.adminTambahMetodePembayaran);
 router.post('/adminTambahAkun', apiController.adminTambahAkun); 
 
@@ -104,7 +104,7 @@ router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEc
 
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
-router.patch('/adminUpdateProduk/:id', apiController.adminUpdateProduk); 
+router.patch('/adminUpdateProduk/:id', upload.array('link_gambar', 10), apiController.adminUpdateProduk);
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman

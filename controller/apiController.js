@@ -613,56 +613,102 @@ const adminUpdateKaryawanIzin = async (req, res) => {
 //fungsi untuk menambahkan produk dan varian produk oleh admin
 const adminTambahProduk = async (req, res) => {
     try {
-        const { nama_produk, deskripsi, harga_produk, varian } = req.body;
-
-        // Ambil nama file gambar yang di-upload
+        const { nama_produk, deskripsi, harga_produk } = req.body;
         const files = req.files || [];
-        const link_gambar = files.map(file => file.filename); // array of filenames
 
-        // Validasi input
-        if (!nama_produk || !deskripsi || !harga_produk || !Array.isArray(varian) || link_gambar.length === 0) {
+        const link_gambar = files.map(file => ({
+            filename: file.filename,
+            originalname: file.originalname
+        }));
+
+        let parsedVarian = [];
+        if (req.body.varian) {
+            parsedVarian = typeof req.body.varian === 'string'
+                ? JSON.parse(req.body.varian)
+                : req.body.varian;
+        }
+
+        if (!nama_produk || !deskripsi || !harga_produk || parsedVarian.length === 0 || link_gambar.length === 0) {
             return res.status(400).json({ pesan: 'Data produk tidak lengkap atau format salah.' });
         }
 
-        // Simpan produk (gunakan array gambar)
-        const result = await dbModel.postAdminTambahProduk(nama_produk, deskripsi, harga_produk, JSON.stringify(link_gambar));
+        // ✅ Simpan produk hanya sekali
+        const gambarUtama = link_gambar[0].filename;
+        const result = await dbModel.postAdminTambahProduk(
+            nama_produk,
+            deskripsi,
+            harga_produk,
+            gambarUtama
+        );
         const id_produk = result[0].insertId;
 
-        // Simpan varian
-        const parsedVarian = typeof varian === 'string' ? JSON.parse(varian) : varian; // jika frontend mengirim varian sebagai JSON string
+        // ✅ Simpan varian dalam loop
         for (const v of parsedVarian) {
-            const { warna, ukuran, stok } = v;
-            await dbModel.postAdminTambahVarianProduk(id_produk, warna, ukuran, stok);
+            const { warna, ukuran, stok, gambar } = v;
+            if (!warna || !ukuran || !stok || !gambar) continue;
+
+            const matched = link_gambar.find(g => g.originalname === gambar);
+            if (!matched) {
+                return res.status(400).json({ pesan: `Gambar varian "${gambar}" tidak ditemukan.` });
+            }
+
+            await dbModel.postAdminTambahVarianProduk(
+                id_produk,
+                warna,
+                ukuran,
+                stok,
+                matched.filename
+            );
         }
 
-        res.status(201).json({ pesan: 'Produk dan varian berhasil ditambahkan.' });
+        res.status(201).json({ pesan: 'Produk dan semua varian berhasil ditambahkan.' });
     } catch (error) {
-        console.error('Error saat menambahkan produk:', error);
-        res.status(500).json({ pesan: 'Terjadi kesalahan saat menambahkan produk.' });
+        console.error(error);
+        res.status(500).json({ pesan: 'Terjadi kesalahan saat menyimpan data produk.' });
     }
 };
+
+
+
 
 
 //fungsi untuk mengubah produk dan varian produk oleh admin
 const adminUpdateProduk = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nama_produk, deskripsi, harga_produk, link_gambar, varian } = req.body;
+        const { nama_produk, deskripsi, harga_produk, varian } = req.body;
 
-        if (!id || !nama_produk || !deskripsi || !harga_produk || !link_gambar || !Array.isArray(varian)) {
+        const files = req.files || [];
+        const link_gambar = files.map(file => ({
+            filename: file.filename,
+            originalname: file.originalname
+        }));
+
+        if (!id || !nama_produk || !deskripsi || !harga_produk) {
             return res.status(400).json({ pesan: 'Data tidak lengkap atau format salah.' });
         }
 
-        // Update data utama produk
-        await dbModel.updateProduk(id, nama_produk, deskripsi, harga_produk, link_gambar);
+        // Gunakan gambar pertama sebagai gambar utama produk (opsional)
+        const gambarUtama = link_gambar.length > 0 ? link_gambar[0].filename : null;
 
-        for (const v of varian) {
-            const { id_varian, warna, ukuran, stok } = v;
+        // Update produk (tanpa gambar utama jika tidak diupload ulang)
+        await dbModel.updateProduk(id, nama_produk, deskripsi, harga_produk, gambarUtama);
+
+        const parsedVarian = typeof varian === 'string' ? JSON.parse(varian) : varian;
+
+        for (const v of parsedVarian) {
+            const { id_varian, warna, ukuran, stok, gambar } = v;
+
+            // Temukan file berdasarkan nama gambar original
+            const matchedFile = link_gambar.find(g => g.originalname === gambar);
+            const filename = matchedFile ? matchedFile.filename : null;
 
             if (id_varian) {
-                await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok);
+                // Update varian
+                await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok, filename);
             } else {
-                await dbModel.insertVarianBaru(id, warna, ukuran, stok);
+                // Tambah varian baru
+                await dbModel.insertVarianBaru(id, warna, ukuran, stok, filename);
             }
         }
 
@@ -672,6 +718,8 @@ const adminUpdateProduk = async (req, res) => {
         res.status(500).json({ pesan: 'Terjadi kesalahan saat memperbarui produk.' });
     }
 };
+
+
 
 //fungsi untuk menampilkan di halaman update admin produk
 const adminTampilUpdateProduk = async (req, res) => {
