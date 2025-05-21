@@ -204,6 +204,7 @@ const insertVarianBaru = (id_produk, warna, ukuran, stok, link_gambar) => {
     return dbPool.query(SQLQuery, [id_produk, warna, ukuran, stok, link_gambar]);
 };
 
+
 const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok, gambar) => {
     const SQLQuery = `
         INSERT INTO varian_produk (id_produk, warna, ukuran, stok, link_gambar_varian)
@@ -272,7 +273,7 @@ const getTampilUlasanProduk = (id) => {
 }
 
 const getTampilProduk = () => {
-    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk GROUP BY produk.id, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
+    const SQLQuery = `SELECT produk.id AS id, produk.kategori, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk GROUP BY produk.id, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
 `;
     return dbPool.query(SQLQuery);
 }
