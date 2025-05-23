@@ -1,6 +1,27 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+
+const postChat = ( id_pengirim, id_penerima, pesan) => {
+    const SQLQuery = `INSERT INTO chats ( pesan, id_pengirim, id_penerima) VALUES ( ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [ id_pengirim, id_penerima, pesan]);
+}
+
+const getChat = (id_user_login, id_user_lawan) => {
+    const SQLQuery = `
+      SELECT * FROM chats 
+      WHERE 
+        (id_pengirim = ? AND id_penerima = ?) OR 
+        (id_pengirim = ? AND id_penerima = ?)
+      ORDER BY created_at ASC
+    `;
+    return dbPool.query(SQLQuery, [
+      id_user_login, id_user_lawan,
+      id_user_lawan, id_user_login
+    ]);
+}
+
+
 const updateHargaAsli = (id_produk, harga_awal) => {
     const SQLQuery = `UPDATE produk_asli SET harga_awal = ? WHERE id_produk = ?`;
     return dbPool.query(SQLQuery, [harga_awal, id_produk]);
@@ -278,7 +299,7 @@ const getPengajuanIzinKaryawan = (id) => {
     return dbPool.query(SQLQuery, [id]);
 }
 const getTampilUlasanProduk = (id) => {
-    const SQLQuery = `SELECT * FROM komentar WHERE komentar.id_produk = ?;`;
+    const SQLQuery = `SELECT komentar.id, pengguna.nama, komentar.id_produk, komentar.rating, komentar.komentar, komentar.tanggal_komentar FROM komentar JOIN pengguna ON komentar.id_pengguna = pengguna.id WHERE komentar.id_produk = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -468,4 +489,6 @@ module.exports = {
     getAdminCekDataAkun,
     postHargaAsli,
     updateHargaAsli,
+    getChat,
+    postChat,
  }

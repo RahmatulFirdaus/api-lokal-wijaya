@@ -4,6 +4,10 @@ var router = express.Router();
 
 const apiController = require('../controller/apiController');
 
+//CHAT
+router.get('/chat/:id', apiController.chat);
+router.post('/chat/send', apiController.chatPost); 
+
 //GET DEFAULT
 router.post('/login', apiController.login);
 

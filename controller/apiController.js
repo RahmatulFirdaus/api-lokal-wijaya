@@ -9,8 +9,8 @@ const generateToken = (pengguna) => {
     console.log("Username:", pengguna.username);
     console.log("Role:", pengguna.role);
     return jwt.sign(
-        { id: pengguna.id, username: pengguna.username, role: pengguna.role }
-        , process.env.JWT_SECRET, { expiresIn: '1h' });
+        { id: pengguna.id, username: pengguna.username, nama: pengguna.nama, role: pengguna.role }
+        , process.env.JWT_SECRET, { expiresIn: '5h' });
 }
 
 // Fungsi untuk menangani login
@@ -446,7 +446,10 @@ const tampilUlasanProduk = async (req, res) => {
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Ulasan produk tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data ulasan produk berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data ulasan produk berhasil diambil', data: data.map(item => ({
+            ...item,
+            tanggal_komentar: timeMoment(item.tanggal_komentar).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss')
+        })) });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -1448,6 +1451,52 @@ const adminDeleteAkun = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan riwayat chat
+const chat = async (req, res) => {
+    try {
+        const id_user = req.pengguna.id;
+        const id_lawan = req.params.id;
+
+        // Ambil semua chat antara user dan lawan bicara
+        const [data] = await dbModel.getChat(id_user, id_lawan);
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'Data chat tidak ditemukan' });
+        }
+
+        return res.status(200).json({
+            pesan: 'Data chat berhasil diambil',
+            data: data.map((item) => ({
+                ...item,
+                createdAt: timeMoment(item.createdAt)
+                    .tz('Asia/Makassar')
+                    .format('YYYY-MM-DD HH:mm:ss'),
+            })),
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
+
+//fungsi untuk mengirimkan chat
+const chatPost = async (req, res) => {
+    try {
+        const id_user = req.pengguna.id;
+        
+        await dbModel.postChat(
+            id_user,
+            req.body.id_lawan,
+            req.body.pesan
+        );
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
 
 
 module.exports = {
@@ -1507,4 +1556,7 @@ module.exports = {
     adminTampilDataAkun,
     adminTambahAkun,
     adminUpdateAkun,
+    chat,
+    chatPost,
+    adminDeleteAkun
 }
