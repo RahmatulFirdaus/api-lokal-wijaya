@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateHargaAsli = (id_produk, harga_awal) => {
+    const SQLQuery = `UPDATE produk_asli SET harga_awal = ? WHERE id_produk = ?`;
+    return dbPool.query(SQLQuery, [harga_awal, id_produk]);
+}
+
+const postHargaAsli = (id_produk, harga_awal) => {
+    const SQLQuery = `INSERT INTO produk_asli (id_produk, harga_awal) VALUES (?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, harga_awal]);
+}
+
 const deleteAdminDataAkun = (id) => {
     const SQLQuery = `DELETE FROM pengguna WHERE id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -273,13 +283,13 @@ const getTampilUlasanProduk = (id) => {
 }
 
 const getTampilProduk = () => {
-    const SQLQuery = `SELECT produk.id AS id, produk.kategori, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk GROUP BY produk.id, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
+    const SQLQuery = `SELECT produk.id AS id, produk.kategori, produk_asli.harga_awal, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_asli ON produk_asli.id_produk = produk.id GROUP BY produk.id, produk.kategori, produk_asli.harga_awal, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
 `;
     return dbPool.query(SQLQuery);
 }
 
 const getTampilProdukDetail = (id) => {
-    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, produk.kategori AS kategori_produk, produk.created_at, varian_produk.id AS id_varian, varian_produk.warna AS warna_produk, varian_produk.ukuran AS ukuran_produk, varian_produk.stok AS stok_produk, varian_produk.link_gambar_varian FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk WHERE produk.id = ?`;
+    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk_asli.harga_awal, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, produk.kategori AS kategori_produk, produk.created_at, varian_produk.id AS id_varian, varian_produk.warna AS warna_produk, varian_produk.ukuran AS ukuran_produk, varian_produk.stok AS stok_produk, varian_produk.link_gambar_varian FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_asli ON produk_asli.id_produk = produk.id WHERE produk.id = ?`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -456,4 +466,6 @@ module.exports = {
     deleteAdminDataAkun,
     updateAdminDataAkun,
     getAdminCekDataAkun,
+    postHargaAsli,
+    updateHargaAsli,
  }

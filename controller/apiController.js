@@ -411,6 +411,7 @@ const tampilProdukDetail = async (req, res) => {
         const produk = {
             id: rows[0].id,
             nama: rows[0].nama_produk,
+            harga_awal: rows[0].harga_awal,
             deskripsi: rows[0].deskripsi_produk,
             harga: rows[0].harga_produk,
             link_gambar: rows[0].link_gambar_produk,
@@ -638,7 +639,7 @@ const adminUpdateKaryawanIzin = async (req, res) => {
 //fungsi untuk menambahkan produk dan varian produk oleh admin
 const adminTambahProduk = async (req, res) => {
     try {
-        const { nama_produk, deskripsi, harga_produk } = req.body;
+        const { nama_produk, deskripsi, harga_produk, harga_awal } = req.body;
         const files = req.files || [];
 
         const link_gambar = files.map(file => ({
@@ -666,6 +667,8 @@ const adminTambahProduk = async (req, res) => {
             gambarUtama
         );
         const id_produk = result[0].insertId;
+
+        await dbModel.postHargaAsli(id_produk, harga_awal);
 
         // ✅ Simpan varian dalam loop
         for (const v of parsedVarian) {
@@ -701,7 +704,7 @@ const adminTambahProduk = async (req, res) => {
 const adminUpdateProduk = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nama_produk, deskripsi, harga_produk, varian } = req.body;
+        const { nama_produk, deskripsi, harga_produk, varian, harga_awal } = req.body;
 
         const files = req.files || [];
         const link_gambar = files.map(file => ({
@@ -736,6 +739,8 @@ const adminUpdateProduk = async (req, res) => {
                 await dbModel.insertVarianBaru(id, warna, ukuran, stok, filename);
             }
         }
+        //update harga awal produk asli
+        await dbModel.updateHargaAsli(id, harga_awal);
 
         res.status(200).json({ pesan: 'Produk dan varian berhasil diperbarui.' });
     } catch (error) {
