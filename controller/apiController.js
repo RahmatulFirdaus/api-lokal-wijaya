@@ -13,6 +13,30 @@ const generateToken = (pengguna) => {
         , process.env.JWT_SECRET, { expiresIn: '5h' });
 }
 
+//fungsi authentication
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({
+            status: false,
+            pesan: "Token tidak ditemukan",
+            kode: 401
+        });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({
+                status: false,
+                pesan: "Token tidak valid",
+                kode: 403
+            });
+        }    
+        req.user = user;
+        next();
+    });
+}
+
 // Fungsi untuk menangani login
 const login = async (req, res) => {
     try {
@@ -1454,7 +1478,7 @@ const adminDeleteAkun = async (req, res) => {
 //fungsi untuk menampilkan riwayat chat
 const chat = async (req, res) => {
     try {
-        const id_user = req.pengguna.id;
+        const id_user = req.user.id;
         const id_lawan = req.params.id;
 
         // Ambil semua chat antara user dan lawan bicara
@@ -1484,7 +1508,7 @@ const chat = async (req, res) => {
 //fungsi untuk mengirimkan chat
 const chatPost = async (req, res) => {
     try {
-        const id_user = req.pengguna.id;
+        const id_user = req.user.id;
         
         await dbModel.postChat(
             id_user,
@@ -1497,6 +1521,45 @@ const chatPost = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan list admin dari chat pembeli
+const chatListAdmin = async (req, res) => {
+    try {
+        const [data] = await dbModel.getChatListAdmin();
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'Data chat tidak ditemukan' });
+        }
+
+        return res.status(200).json({
+            pesan: 'Data chat berhasil diambil',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menampilkan list pembeli dari chat admin
+const chatListPembeli = async (req, res) => {
+    try {
+        const [data] = await dbModel.getChatListPembeli();
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'Data chat tidak ditemukan' });
+        }
+
+        return res.status(200).json({
+            pesan: 'Data chat berhasil diambil',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
 
 
 module.exports = {
@@ -1558,5 +1621,8 @@ module.exports = {
     adminUpdateAkun,
     chat,
     chatPost,
-    adminDeleteAkun
+    adminDeleteAkun,
+    authenticateToken,
+    chatListAdmin,
+    chatListPembeli,
 }

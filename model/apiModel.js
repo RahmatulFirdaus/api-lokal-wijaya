@@ -1,6 +1,15 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getChatListPembeli = () => {
+    const SQLQuery = `SELECT * FROM pengguna WHERE role = 'pembeli'`;
+    return dbPool.query(SQLQuery);
+}
+
+const getChatListAdmin = () => {
+    const SQLQuery = `SELECT * FROM pengguna WHERE role = 'admin'`;
+    return dbPool.query(SQLQuery);
+}
 
 const postChat = ( id_pengirim, id_penerima, pesan) => {
     const SQLQuery = `INSERT INTO chats ( pesan, id_pengirim, id_penerima) VALUES ( ?, ?, ?)`;
@@ -491,4 +500,6 @@ module.exports = {
     updateHargaAsli,
     getChat,
     postChat,
+    getChatListPembeli,
+    getChatListAdmin,
  }

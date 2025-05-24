@@ -5,8 +5,12 @@ var router = express.Router();
 const apiController = require('../controller/apiController');
 
 //CHAT
-router.get('/chat/:id', apiController.chat);
-router.post('/chat/send', apiController.chatPost); 
+router.get('/chat/:id', apiController.authenticateToken, apiController.chat);
+router.post('/chat/send', apiController.authenticateToken, apiController.chatPost); 
+
+//BUAT LIST CHAT PEMBELI
+router.get('/chat/listPembeli', apiController.chatListPembeli);
+router.get('/chat/listAdmin',  apiController.chatListAdmin);
 
 //GET DEFAULT
 router.post('/login', apiController.login);
