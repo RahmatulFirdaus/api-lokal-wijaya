@@ -1491,15 +1491,16 @@ const chat = async (req, res) => {
         }
 
         return res.status(200).json({
-            pesan: 'Data chat berhasil diambil',
-            data: data.map((item) => ({
-                ...item,
-                createdAt: timeMoment(item.createdAt)
-                    .tz('Asia/Makassar')
-                    .format('YYYY-MM-DD HH:mm:ss'),
-            })),
-        });
-
+    pesan: 'Data chat berhasil diambil',
+    data: data.map((item) => ({
+        id_pengirim: item.id_pengirim,   // <--- tambahkan ini
+        id_penerima: item.id_penerima,   // <--- dan ini
+        pesan: item.pesan,
+        createdAt: timeMoment(item.createdAt)
+            .tz('Asia/Makassar')
+            .format('YYYY-MM-DD HH:mm:ss'),
+    })),
+});
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -1548,7 +1549,9 @@ const chatListAdmin = async (req, res) => {
 //fungsi untuk menampilkan list pembeli dari chat admin
 const chatListPembeli = async (req, res) => {
     try {
-        const [data] = await dbModel.getChatListPembeli();
+        const id = req.user.id;
+        console.log(`ID User nyaaaa: ${id}`);
+        const [data] = await dbModel.getChatListPembeli(id);
 
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Data chat tidak ditemukan' });

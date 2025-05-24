@@ -8,8 +8,9 @@ const apiController = require('../controller/apiController');
 router.get('/chat/:id', apiController.authenticateToken, apiController.chat);
 router.post('/chat/send', apiController.authenticateToken, apiController.chatPost); 
 
+
 //BUAT LIST CHAT PEMBELI
-router.get('/chatListPembeli', apiController.chatListPembeli);
+router.get('/chatListPembeli', apiController.authenticateToken, apiController.chatListPembeli);
 router.get('/chatListAdmin',  apiController.chatListAdmin);
 
 //GET DEFAULT

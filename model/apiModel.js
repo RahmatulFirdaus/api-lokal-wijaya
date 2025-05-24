@@ -1,9 +1,10 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
-const getChatListPembeli = () => {
-    const SQLQuery = `SELECT * FROM pengguna WHERE role = 'pembeli'`;
-    return dbPool.query(SQLQuery);
+
+const getChatListPembeli = (id) => {
+    const SQLQuery = `SELECT DISTINCT pengguna.* FROM pengguna JOIN chats ON pengguna.id = chats.id_pengirim WHERE pengguna.role = 'pembeli' AND chats.pesan IS NOT NULL AND chats.pesan <> '' AND chats.id_penerima = ?;`;
+    return dbPool.query(SQLQuery, [id]);
 }
 
 const getChatListAdmin = () => {
