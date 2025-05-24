@@ -11,9 +11,9 @@ const getChatListAdmin = () => {
     return dbPool.query(SQLQuery);
 }
 
-const postChat = ( id_pengirim, id_penerima, pesan) => {
+const postChat = ( pesan, id_pengirim, id_penerima, ) => {
     const SQLQuery = `INSERT INTO chats ( pesan, id_pengirim, id_penerima) VALUES ( ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [ id_pengirim, id_penerima, pesan]);
+    return dbPool.query(SQLQuery, [pesan, id_pengirim, id_penerima, ]);
 }
 
 const getChat = (id_user_login, id_user_lawan) => {

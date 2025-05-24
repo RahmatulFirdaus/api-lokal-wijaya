@@ -1481,6 +1481,8 @@ const chat = async (req, res) => {
         const id_user = req.user.id;
         const id_lawan = req.params.id;
 
+        console.log(`ID User: ${id_user}, ID Lawan: ${id_lawan}`);
+
         // Ambil semua chat antara user dan lawan bicara
         const [data] = await dbModel.getChat(id_user, id_lawan);
 
@@ -1509,11 +1511,12 @@ const chat = async (req, res) => {
 const chatPost = async (req, res) => {
     try {
         const id_user = req.user.id;
+        console.log(`ID User nyaaaa: ${id_user}`);
         
         await dbModel.postChat(
+            req.body.pesan,
             id_user,
-            req.body.id_lawan,
-            req.body.pesan
+            req.body.id_penerima
         );
     } catch (error) {
         console.error(error);
@@ -1525,6 +1528,7 @@ const chatPost = async (req, res) => {
 const chatListAdmin = async (req, res) => {
     try {
         const [data] = await dbModel.getChatListAdmin();
+        console.log(data);
 
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Data chat tidak ditemukan' });
