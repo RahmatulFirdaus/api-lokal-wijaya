@@ -155,7 +155,7 @@ const deletePembeliKeranjang = (id) => {
 }
 
 const getPembeliTampilKeranjang = (id) => {
-    const SQLQuery = `SELECT item_order.id AS id_item_order, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga AS harga_satuan FROM item_order JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id WHERE item_order.id_pengguna = ? AND item_order.id_orderan IS NULL`;
+    const SQLQuery = `SELECT item_order.id AS id_item_order,varian_produk.id as id_varian_produk, varian_produk.link_gambar_varian, produk_asli.harga_awal, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga AS harga_satuan FROM item_order JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN produk_asli ON produk_asli.id_produk = produk.id WHERE item_order.id_pengguna = ? AND item_order.id_orderan IS NULL;`;
     return dbPool.query(SQLQuery, [id]);
 }
 

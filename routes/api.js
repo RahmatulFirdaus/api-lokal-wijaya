@@ -35,7 +35,7 @@ router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTra
 router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 router.get('/pembeliFaktur/:id', apiController.pembeliFaktur); //sepaket ama laporan
 router.get('/pengiriman/:id', apiController.getPengirimanData);
-router.get('/pembeliTampilKeranjang/:id', apiController.pembeliTampilKeranjang); //id diisi dengan id pengguna
+router.get('/pembeliTampilKeranjang', apiController.authenticateToken,apiController.pembeliTampilKeranjang); //id diisi dengan id pengguna
 
 //GET KARYAWAN
 router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
@@ -44,7 +44,7 @@ router.get('/karyawanTambahProdukPenjualanOffline', apiController.karyawanTambah
 
 //POST PEMBELI
 router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
-router.post('/pembeliTambahKeranjang', apiController.pembeliTambahKeranjang);
+router.post('/pembeliTambahKeranjang', apiController.authenticateToken, apiController.pembeliTambahKeranjang);
 
 //POST KARYAWAN
 router.post('/karyawanTambahPengajuanIzin', apiController.karyawanTambahPengajuanIzin);

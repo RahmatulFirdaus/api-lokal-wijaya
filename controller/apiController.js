@@ -117,7 +117,8 @@ const daftar = async (req, res) => {
 // Fungsi untuk menambahkan produk ke keranjang
 const pembeliTambahKeranjang = async (req, res) => {
     try {
-        const { id_pengguna, id_varian_produk, jumlah_order } = req.body;
+        const id_pengguna  = req.user.id; // Mengambil id_pengguna dari token JWT
+        const { id_varian_produk, jumlah_order } = req.body;
 
         console.log("ID Pengguna:", id_pengguna);
         console.log("ID Varian Produk:", id_varian_produk); 
@@ -130,9 +131,13 @@ const pembeliTambahKeranjang = async (req, res) => {
         // Ambil stok saat ini dari database
         const [stokRows] = await dbModel.getStokVarianProduk(id_varian_produk);
 
+        console.log("Stok Rows:", stokRows);
+
         if (stokRows.length === 0) {
             return res.status(404).json({ pesan: 'Varian produk tidak ditemukan' });
         }
+
+        
 
         const stokSaatIni = stokRows[0].stok;
 
@@ -1087,10 +1092,10 @@ const adminTampilMetodePembayaran = async (req, res) => {
 // fungsi untuk menampilkan keranjang pembeli
 const pembeliTampilKeranjang = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const  id_pengguna  = req.user.id; // Mengambil id dari parameter URL
 
         // Mengambil data keranjang pembeli berdasarkan id_pengguna
-        const [data] = await dbModel.getPembeliTampilKeranjang(id);
+        const [data] = await dbModel.getPembeliTampilKeranjang(id_pengguna);
 
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Keranjang tidak ditemukan' });
