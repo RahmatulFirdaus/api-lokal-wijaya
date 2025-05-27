@@ -170,14 +170,15 @@ const generateNomorFaktur = () => {
 // Fungsi untuk menangani proses pemesanan produk oleh pembeli
 const pembeliOrderProduk = async (req, res) => {
     try {
+        const id_pengguna = req.user.id; // Mengambil id_pengguna dari token JWT
         const {
-            id_pengguna,
             id_metode_pembayaran,
             total_harga,
             nama_pengirim,
             bank_pengirim,
             alamat_pengiriman
         } = req.body;
+        
 
         // Ambil banyak file bukti transfer
         const bukti_transfer_files = req.files || [];
@@ -1116,6 +1117,8 @@ const pembeliDeleteKeranjang = async (req, res) => {
 
         // 1. Ambil data item_order berdasarkan id
         const [rows] = await dbModel.getItemOrderById(id);
+        // Cek apakah item_order ditemukan
+        console.log("Rows:", rows);
         if (rows.length === 0) {
             return res.status(404).json({ pesan: 'Item keranjang tidak ditemukan' });
         }
@@ -1128,9 +1131,9 @@ const pembeliDeleteKeranjang = async (req, res) => {
         // 3. Hapus item_order
         await dbModel.deletePembeliKeranjang(id);
 
-        res.status(200).json({ pesan: 'Produk berhasil dihapus dari keranjang dan stok dikembalikan' });
+        return res.status(200).json({ pesan: 'Produk berhasil dihapus dari keranjang dan stok dikembalikan' });
     } catch (error) {
-        console.error(error);
+        console.error('Error saat menghapus keranjang:', error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
 };
