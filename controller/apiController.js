@@ -178,6 +178,14 @@ const pembeliOrderProduk = async (req, res) => {
             bank_pengirim,
             alamat_pengiriman
         } = req.body;
+
+        console.log("ID Pengguna:", id_pengguna);
+        console.log("ID Metode Pembayaran:", id_metode_pembayaran);
+        console.log("Total Harga:", total_harga);
+        console.log("Nama Pengirim:", nama_pengirim);
+        console.log("Bank Pengirim:", bank_pengirim);
+        console.log("Alamat Pengiriman:", alamat_pengiriman);
+        
         
 
         // Ambil banyak file bukti transfer

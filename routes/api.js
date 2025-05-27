@@ -69,7 +69,7 @@ router.delete('/pembeliDeleteKeranjang/:id', apiController.pembeliDeleteKeranjan
 
 
 //UPLOAD / POST PEMBELI
-router.post('/upload', upload.array('bukti_transfer', 5), apiController.authenticateToken, apiController.pembeliOrderProduk);
+router.post('/pembayaran/upload', upload.array('bukti_transfer', 5), apiController.authenticateToken, apiController.pembeliOrderProduk);
 
 
 
