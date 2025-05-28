@@ -221,7 +221,7 @@ const pembeliOrderProduk = async (req, res) => {
 // Fungsi untuk mengambil riwayat transaksi pembeli berdasarkan ID pengguna
 const pembeliRiwayatTransaksi = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id  = req.user.id;
 
         // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
         const [data] = await dbModel.getPembeliRiwayatTransaksi(id);
@@ -231,7 +231,11 @@ const pembeliRiwayatTransaksi = async (req, res) => {
         }
 
         // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ pesan: 'Riwayat transaksi berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Riwayat transaksi berhasil diambil', data: data.map(item => ({
+            ...item,
+            tanggal_transfer: timeMoment(item.tanggal_transfer).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+        }))
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -243,7 +247,6 @@ const pembeliRiwayatTransaksiDetail = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari parameter URL
 
-        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
         const [data] = await dbModel.getPembeliRiwayatTransaksiDetail(id);
 
         if (data.length === 0) {
@@ -344,7 +347,7 @@ const getPengirimanData = async (req, res) => {
 // Fungsi untuk menangani pembeli yang ingin mengupdate profile password
 const pembeliProfilePassword = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id = req.user.id; // Mengambil id dari token JWT
         const { password } = req.body; // Mengambil password dari body request
 
         // Validasi Pastikan semua field diisi
@@ -364,7 +367,7 @@ const pembeliProfilePassword = async (req, res) => {
 // Fungsi untuk menangani pembeli yang ingin mengupdate profile nama
 const pembeliProfileNama = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id = req.user.id; // Mengambil id dari token JWT
         const { nama } = req.body; // Mengambil nama dari body request
 
         // Validasi Pastikan semua field diisi
@@ -384,7 +387,7 @@ const pembeliProfileNama = async (req, res) => {
 // Fungsi untuk menangani pembeli yang ingin mengupdate profile nomor telepon
 const pembeliProfileNomorTelepon = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id = req.user.id; // Mengambil id dari token JWT
         const { nomor_telp } = req.body; // Mengambil nomor telepon dari body request
 
         // Validasi Pastikan semua field diisi
@@ -404,7 +407,7 @@ const pembeliProfileNomorTelepon = async (req, res) => {
 // Fungsi untuk menangani pembeli yang ingin mengupdate profile email
 const pembeliProfileEmail = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id = req.user.id; // Mengambil id dari token JWT
         const { email } = req.body; // Mengambil email dari body request
 
         // Validasi Pastikan semua field diisi
@@ -1584,6 +1587,63 @@ const chatListPembeli = async (req, res) => {
     }
 }
 
+//fungsi untuk menampilkan data profile pengguna pembeli (getProfilePembeli)
+const pembeliProfile = async (req, res) => {
+    try {
+        const id_pengguna = req.user.id; // Mengambil id dari token pengguna yang sudah di-verify
+
+        // Mengambil data profile pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getProfilePembeli(id_pengguna);
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'Profile tidak ditemukan' });
+        }
+
+        // Mengembalikan data profile pembeli
+        return res.status(200).json({ pesan: 'Profile berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+//fungsi untuk mengecek status pesanan orderan
+const pembeliCekStatus = async (req, res) => {
+    try {
+        const {id} = req.params; // Mengambil id dari parameter URL
+
+        // Mengambil data profile pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.cekStatusOrderan(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+
+        // Mengembalikan data profile pembeli
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+//fungsi untuk mengecek status pengiriman 
+const pembeliCekPengiriman = async (req, res) => {
+    try {
+        const {id} = req.params; // Mengambil id dari parameter URL
+
+        const [data] = await dbModel.cekStatusPengiriman(id);
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -1648,4 +1708,7 @@ module.exports = {
     authenticateToken,
     chatListAdmin,
     chatListPembeli,
+    pembeliProfile,
+    pembeliCekStatus,
+    pembeliCekPengiriman
 }

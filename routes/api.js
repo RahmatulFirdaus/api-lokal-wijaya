@@ -26,12 +26,14 @@ router.get('/tampilUlasanProduk/:id', apiController.tampilUlasanProduk); //id di
 router.post('/daftar', apiController.daftar);
 
 //GET PEMBELI
-//GET RIWAYT TRANSAKSI DIISI DENGAN ID PENGGUNA
-router.get('/pembeliRiwayatTransaksi/:id', apiController.pembeliRiwayatTransaksi);
+router.get('/pembeliRiwayatTransaksi', apiController.authenticateToken, apiController.pembeliRiwayatTransaksi);
+router.get('/pembeliProfile', apiController.authenticateToken,apiController.pembeliProfile); 
 
 
 //id diisi dengan id_orderan
 router.get('/pembeliRiwayatTransaksiDetail/:id', apiController.pembeliRiwayatTransaksiDetail);
+router.get('/pembeliCekStatus/:id', apiController.pembeliCekStatus); //id diisi dengan id_orderan
+router.get('/pembeliCekPengiriman/:id',  apiController.pembeliCekPengiriman); //id diisi dengan id orderan
 router.get('/pembeliUlasanProduk/:id', apiController.pembeliUlasanProduk);
 router.get('/pembeliFaktur/:id', apiController.pembeliFaktur); //sepaket ama laporan
 router.get('/pengiriman/:id', apiController.getPengirimanData);
@@ -55,10 +57,10 @@ router.post('/karyawanTambahPenjualanOffline', apiController.karyawanTambahPenju
 //UPDATE
 
 //UPDATE PEMBELI
-router.patch('/pembeliUpdateProfilePassword/:id', apiController.pembeliProfilePassword);
-router.patch('/pembeliUpdateProfileNama/:id', apiController.pembeliProfileNama);
-router.patch('/pembeliUpdateProfileNomorTelepon/:id', apiController.pembeliProfileNomorTelepon);
-router.patch('/pembeliUpdateProfileEmail/:id', apiController.pembeliProfileEmail);
+router.patch('/pembeliUpdateProfilePassword', apiController.authenticateToken, apiController.pembeliProfilePassword);
+router.patch('/pembeliUpdateProfileNama', apiController.authenticateToken, apiController.pembeliProfileNama);
+router.patch('/pembeliUpdateProfileNomorTelepon', apiController.authenticateToken, apiController.pembeliProfileNomorTelepon);
+router.patch('/pembeliUpdateProfileEmail', apiController.authenticateToken, apiController.pembeliProfileEmail);
 
 
 

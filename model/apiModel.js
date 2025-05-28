@@ -1,6 +1,20 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const cekStatusPengiriman = (id_orderan) => {
+    const SQLQuery = `select pengiriman.status_pengiriman AS status from pengiriman where pengiriman.id_orderan = ?`;
+    return dbPool.query(SQLQuery, [id_orderan]);
+}
+
+const cekStatusOrderan = (id_orderan) => {
+    const SQLQuery = `select orderan.status AS status from orderan where orderan.id = ?`;
+    return dbPool.query(SQLQuery, [id_orderan]);
+}
+
+const getProfilePembeli = (id) => {
+    const SQLQuery = `select * from pengguna where role = "pembeli" AND pengguna.id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
 
 const getChatListPembeli = (id) => {
     const SQLQuery = `SELECT DISTINCT pengguna.* FROM pengguna JOIN chats ON pengguna.id = chats.id_pengirim WHERE pengguna.role = 'pembeli' AND chats.pesan IS NOT NULL AND chats.pesan <> '' AND chats.id_penerima = ?;`;
@@ -371,13 +385,13 @@ const getPembeliUlasanProduk = (id) => {
 
 const getPembeliRiwayatTransaksiDetail = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
-    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-    const SQLQuery = `SELECT MIN(pembayaran.nama_pengirim) AS nama_pengirim, MIN(pembayaran.bank_pengirim) AS bank_pengirim, pembayaran.tanggal_transfer, MIN(orderan.status) AS status, MIN(orderan.catatan_admin) AS catatan_admin, MIN(orderan.id) AS id_orderan FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE item_order.id_pengguna = ? GROUP BY pembayaran.tanggal_transfer`;
+    const SQLQuery = `SELECT MIN(pembayaran.nama_pengirim) AS nama_pengirim, MIN(pembayaran.bank_pengirim) AS bank_pengirim, pembayaran.tanggal_transfer, MIN(orderan.status) AS status, MIN(orderan.catatan_admin) AS catatan_admin, MIN(orderan.id) AS id_orderan, orderan.id AS id_orderan FROM pembayaran JOIN orderan ON pembayaran.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id WHERE item_order.id_pengguna = ? GROUP BY pembayaran.tanggal_transfer, orderan.id ORDER BY CASE WHEN MIN(orderan.status) = 'pending' THEN 0 ELSE 1 END, pembayaran.tanggal_transfer DESC;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -503,4 +517,7 @@ module.exports = {
     postChat,
     getChatListPembeli,
     getChatListAdmin,
+    getProfilePembeli,
+    cekStatusOrderan,
+    cekStatusPengiriman
  }
