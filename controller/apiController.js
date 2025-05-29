@@ -2,6 +2,8 @@ const dbModel = require('../model/apiModel');
 const timeMoment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const moment = require('moment'); 
+require('moment/locale/id'); 
 
 // Fungsi untuk menghasilkan token JWT
 const generateToken = (pengguna) => {
@@ -285,7 +287,8 @@ const pembeliUlasanProduk = async (req, res) => {
 // Fungsi untuk menambahkan komentar oleh pembeli
 const pembeliTambahKomentar = async (req, res) => {
     try {
-        const { id_produk, id_pengguna, rating, komentar } = req.body; // Mengambil data dari body request
+        const id_pengguna = req.user.id;
+        const { id_produk, rating, komentar } = req.body; 
 
         // Validasi Pastikan semua field diisi
         if (!id_produk || !id_pengguna || !rating || !komentar) {
@@ -303,24 +306,39 @@ const pembeliTambahKomentar = async (req, res) => {
 
 const pembeliFaktur = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const { id } = req.params;
 
-        // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
-        const [data] = await dbModel.getFakturPembeli(id);
-        console.log("Data Faktur:", data);
+        const [rows] = await dbModel.getFakturPembeli(id);
+        console.log("Data Faktur:", rows);
 
-        if (data.length === 0) {
+        if (rows.length === 0) {
             return res.status(404).json({ pesan: 'Faktur tidak ditemukan' });
         }
 
-        // Mengembalikan data riwayat transaksi
-        return res.status(200).json({ pesan: 'Faktur berhasil diambil', data: data });
+        // Ambil informasi utama dari baris pertama
+        const fakturInfo = {
+            nomor_faktur: rows[0].nomor_faktur,
+            tanggal_faktur: moment(rows[0].tanggal_faktur).locale('id').format('DD MMMM YYYY, HH:mm'),
+            id: rows[0].id,
+            nama_pengguna: rows[0].nama_pengguna,
+            items: rows.map(item => ({
+                nama_barang: item.nama_barang,
+                warna: item.warna,
+                ukuran: item.ukuran,
+                jumlah_order: item.jumlah_order,
+                harga: item.harga
+            }))
+        };
+
+        return res.status(200).json({
+            pesan: 'Faktur berhasil diambil',
+            data: fakturInfo
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
-}
-
+};
 const getPengirimanData = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari parameter URL
@@ -1644,6 +1662,27 @@ const pembeliCekPengiriman = async (req, res) => {
     }
 }
 
+//fungsi untuk mengecek komentar pembeli sudah komentar atau belum
+const pembeliCekKomentar = async (req, res) => {
+    try {
+        const id_pengguna = req.user.id;
+        const {id} = req.params;
+
+        console.log(id_pengguna);
+        console.log(id);
+
+        const [data] = await dbModel.getPembeliKomentar(id_pengguna, id);
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+
 
 module.exports = {
     login,
@@ -1710,5 +1749,6 @@ module.exports = {
     chatListPembeli,
     pembeliProfile,
     pembeliCekStatus,
-    pembeliCekPengiriman
+    pembeliCekPengiriman,
+    pembeliCekKomentar
 }

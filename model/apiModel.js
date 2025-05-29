@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getPembeliKomentar = (id_pengguna, id_produk,) => {    
+    const SQLQuery = `SELECT * FROM komentar WHERE id_pengguna = ? AND id_produk = ?;`;
+    return dbPool.query(SQLQuery, [id_pengguna, id_produk]);
+}   
+
 const cekStatusPengiriman = (id_orderan) => {
     const SQLQuery = `select pengiriman.status_pengiriman AS status from pengiriman where pengiriman.id_orderan = ?`;
     return dbPool.query(SQLQuery, [id_orderan]);
@@ -385,7 +390,7 @@ const getPembeliUlasanProduk = (id) => {
 
 const getPembeliRiwayatTransaksiDetail = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
-    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    const SQLQuery = `SELECT produk.id AS id_produk,produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -519,5 +524,6 @@ module.exports = {
     getChatListAdmin,
     getProfilePembeli,
     cekStatusOrderan,
-    cekStatusPengiriman
+    cekStatusPengiriman,
+    getPembeliKomentar
  }

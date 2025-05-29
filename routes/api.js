@@ -28,6 +28,7 @@ router.post('/daftar', apiController.daftar);
 //GET PEMBELI
 router.get('/pembeliRiwayatTransaksi', apiController.authenticateToken, apiController.pembeliRiwayatTransaksi);
 router.get('/pembeliProfile', apiController.authenticateToken,apiController.pembeliProfile); 
+router.get('/pembeliCekKomentar/:id', apiController.authenticateToken,apiController.pembeliCekKomentar); //id diisi dengan id produk
 
 
 //id diisi dengan id_orderan
@@ -45,7 +46,7 @@ router.get('/karyawanTambahProdukPenjualanOffline', apiController.karyawanTambah
 
 
 //POST PEMBELI
-router.post('/pembeliTambahKomentar', apiController.pembeliTambahKomentar);
+router.post('/pembeliTambahKomentar', apiController.authenticateToken,apiController.pembeliTambahKomentar);
 router.post('/pembeliTambahKeranjang', apiController.authenticateToken, apiController.pembeliTambahKeranjang);
 
 //POST KARYAWAN
