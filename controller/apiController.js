@@ -288,15 +288,15 @@ const pembeliUlasanProduk = async (req, res) => {
 const pembeliTambahKomentar = async (req, res) => {
     try {
         const id_pengguna = req.user.id;
-        const { id_produk, rating, komentar } = req.body; 
+        const { id_produk, id_varian_produk, rating, komentar } = req.body; 
 
         // Validasi Pastikan semua field diisi
-        if (!id_produk || !id_pengguna || !rating || !komentar) {
+        if (!id_produk || !id_pengguna || !id_varian_produk || !rating || !komentar) {
             return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data komentar ke database
-        await dbModel.postPembeliTambahKomentar(id_produk, id_pengguna, rating, komentar);
+        await dbModel.postPembeliTambahKomentar(id_produk, id_pengguna, id_varian_produk, rating, komentar);
         res.status(201).json({ pesan: 'Ulasan berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
@@ -518,12 +518,35 @@ const tampilUlasanProduk = async (req, res) => {
 //fungsi untuk menampilkan data karyawan pengajuan
 const karyawanTampilPengajuanIzin = async (req, res) => {
     try {
-        const { id } = req.params; // Mengambil id dari parameter URL
+        const id  = req.user.id; 
         const [data] = await dbModel.getPengajuanIzinKaryawan(id);
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Pengajuan izin tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data pengajuan izin berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data pengajuan izin berhasil diambil', data: data.map(item => ({
+            ...item,
+            tanggal_mulai: timeMoment(item.tanggal_mulai).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+            tanggal_akhir: timeMoment(item.tanggal_akhir).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+        })) });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+//fungsi untuk menghapus pengajuan izin karyawan
+const karyawanDeletePengajuanIzin = async (req, res) => {
+    try {
+        const { id } = req.params; // Mengambil id dari parameter URL
+
+        // Validasi Pastikan id diisi
+        if (!id) {
+            return res.status(400).json({ pesan: 'Harap Mengisikan ID Pengajuan Izin' });
+        }
+
+        // Hapus data pengajuan izin dari database
+        await dbModel.deleteKaryawanPengajuanIzin(id);
+        res.status(200).json({ pesan: 'Pengajuan izin berhasil dihapus' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -533,7 +556,8 @@ const karyawanTampilPengajuanIzin = async (req, res) => {
 //fungsi untuk karyawan tambah pengajuan izin
 const karyawanTambahPengajuanIzin = async (req, res) => {
     try {
-        const { id_pengguna, tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir } = req.body; // Mengambil data dari body request
+        const id_pengguna = req.user.id; 
+        const {tipe_izin, deskripsi, tanggal_mulai, tanggal_akhir } = req.body; // Mengambil data dari body request
 
         // Validasi Pastikan semua field diisi
         if (!id_pengguna || !tipe_izin || !deskripsi || !tanggal_mulai || !tanggal_akhir) {
@@ -552,7 +576,7 @@ const karyawanTambahPengajuanIzin = async (req, res) => {
 //fungsi untuk karyawan tambah absensi, jika hari ini sudah absen, maka tidak bisa absen lagi
 const karyawanTambahAbsensi = async (req, res) => {
     try {
-        const { id_pengguna } = req.body; // Mengambil data dari body request
+        const id_pengguna = req.user.id; // Mengambil data dari body request
 
         // Validasi Pastikan semua field diisi
         if (!id_pengguna) {
@@ -1750,5 +1774,6 @@ module.exports = {
     pembeliProfile,
     pembeliCekStatus,
     pembeliCekPengiriman,
-    pembeliCekKomentar
+    pembeliCekKomentar,
+    karyawanDeletePengajuanIzin
 }

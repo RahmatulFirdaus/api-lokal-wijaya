@@ -28,7 +28,7 @@ router.post('/daftar', apiController.daftar);
 //GET PEMBELI
 router.get('/pembeliRiwayatTransaksi', apiController.authenticateToken, apiController.pembeliRiwayatTransaksi);
 router.get('/pembeliProfile', apiController.authenticateToken,apiController.pembeliProfile); 
-router.get('/pembeliCekKomentar/:id', apiController.authenticateToken,apiController.pembeliCekKomentar); //id diisi dengan id produk
+router.get('/pembeliCekKomentar/:id', apiController.authenticateToken,apiController.pembeliCekKomentar); //id diisi dengan id varian produk
 
 
 //id diisi dengan id_orderan
@@ -41,7 +41,7 @@ router.get('/pengiriman/:id', apiController.getPengirimanData);
 router.get('/pembeliTampilKeranjang', apiController.authenticateToken,apiController.pembeliTampilKeranjang); //id diisi dengan id pengguna
 
 //GET KARYAWAN
-router.get('/karyawanTampilPengajuanIzin/:id', apiController.karyawanTampilPengajuanIzin);
+router.get('/karyawanTampilPengajuanIzin', apiController.authenticateToken,apiController.karyawanTampilPengajuanIzin);
 router.get('/karyawanTambahProdukPenjualanOffline', apiController.karyawanTambahProdukPenjualanOffline); 
 
 
@@ -50,8 +50,8 @@ router.post('/pembeliTambahKomentar', apiController.authenticateToken,apiControl
 router.post('/pembeliTambahKeranjang', apiController.authenticateToken, apiController.pembeliTambahKeranjang);
 
 //POST KARYAWAN
-router.post('/karyawanTambahPengajuanIzin', apiController.karyawanTambahPengajuanIzin);
-router.post('/karyawanTambahAbsensi', apiController.karyawanTambahAbsensi); //udah pasti absen
+router.post('/karyawanTambahPengajuanIzin', apiController.authenticateToken,apiController.karyawanTambahPengajuanIzin);
+router.post('/karyawanTambahAbsensi', apiController.authenticateToken,apiController.karyawanTambahAbsensi); //udah pasti absen
 router.post('/karyawanTambahPenjualanOffline', apiController.karyawanTambahPenjualanOffline); //udah pasti absen
 
 
@@ -76,7 +76,8 @@ router.post('/pembayaran/upload', upload.array('bukti_transfer', 5), apiControll
 
 
 
-
+//DELETE KARYAWAN
+router.delete('/karyawanDeletePengajuanIzin/:id', apiController.karyawanDeletePengajuanIzin); //id diisi dengan id pengajuan izin
 
 
 

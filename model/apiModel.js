@@ -1,8 +1,13 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const deleteKaryawanPengajuanIzin = (id) => {
+    const SQLQuery = `DELETE FROM karyawan_pengajuan_izin WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const getPembeliKomentar = (id_pengguna, id_produk,) => {    
-    const SQLQuery = `SELECT * FROM komentar WHERE id_pengguna = ? AND id_produk = ?;`;
+    const SQLQuery = `SELECT * FROM komentar WHERE id_pengguna = ? AND id_varian_produk= ?;`;
     return dbPool.query(SQLQuery, [id_pengguna, id_produk]);
 }   
 
@@ -324,7 +329,7 @@ const postKaryawanTambahPengajuanIzin = (id_pengguna, tipe_izin, deskripsi, tang
 }
 
 const getPengajuanIzinKaryawan = (id) => {
-    const SQLQuery = `SELECT karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir, pengguna.nama FROM karyawan_pengajuan_izin JOIN pengguna ON karyawan_pengajuan_izin.id_pengguna = pengguna.id WHERE pengguna.id = ?;`
+    const SQLQuery = `SELECT karyawan_pengajuan_izin.id, karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir, pengguna.nama FROM karyawan_pengajuan_izin JOIN pengguna ON karyawan_pengajuan_izin.id_pengguna = pengguna.id WHERE pengguna.id = ?;`
     return dbPool.query(SQLQuery, [id]);
 }
 const getTampilUlasanProduk = (id) => {
@@ -378,9 +383,9 @@ const postFakturPembeli = (id_orderan, nomor_faktur) => {
     return dbPool.query(SQLQuery, [nomor_faktur, id_orderan]);
 }
 
-const postPembeliTambahKomentar = (id_produk, id_pengguna, rating, komentar) => {
-    const SQLQuery = `INSERT INTO komentar (id_produk, id_pengguna, rating, komentar) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_produk, id_pengguna, rating, komentar]);
+const postPembeliTambahKomentar = (id_produk, id_pengguna, id_varian_produk, rating, komentar) => {
+    const SQLQuery = `INSERT INTO komentar (id_produk, id_pengguna, id_varian_produk, rating, komentar) VALUES (?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_produk, id_pengguna, id_varian_produk, rating, komentar]);
 }
 
 const getPembeliUlasanProduk = (id) => {
@@ -390,7 +395,7 @@ const getPembeliUlasanProduk = (id) => {
 
 const getPembeliRiwayatTransaksiDetail = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
-    const SQLQuery = `SELECT produk.id AS id_produk,produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    const SQLQuery = `SELECT produk.id AS id_produk, varian_produk.id AS id_varian_produk, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -525,5 +530,6 @@ module.exports = {
     getProfilePembeli,
     cekStatusOrderan,
     cekStatusPengiriman,
-    getPembeliKomentar
+    getPembeliKomentar,
+    deleteKaryawanPengajuanIzin
  }
