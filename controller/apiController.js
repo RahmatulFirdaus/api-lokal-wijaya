@@ -601,13 +601,16 @@ const karyawanTambahAbsensi = async (req, res) => {
 }
 
 //fungsi untuk tampil data karyawan penjualan offline
-const karyawanTambahProdukPenjualanOffline = async (req, res) => {
+const karyawanTampilTambahPenjualanOffline = async (req, res) => {
     try {
         const [data] = await dbModel.getKaryawanPenjualanOffline();
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Data penjualan offline tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data penjualan offline berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data penjualan offline berhasil diambil', data: data.map(item => ({
+            ...item,
+            tanggal: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+        })) });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -617,16 +620,18 @@ const karyawanTambahProdukPenjualanOffline = async (req, res) => {
 //fungsi untuk karyawan tambah penjualan offline
 const karyawanTambahPenjualanOffline = async (req, res) => {
     try {
-        const { id_varian_produk, id_pengguna } = req.body; // Mengambil data dari body request
+        const id_pengguna = req.user.id; // Mengambil id_pengguna dari token JWT
+        const {id_varian_produk, jumlah} = req.body; // Mengambil data dari body request
 
         // Validasi Pastikan semua field diisi
-        if (!id_varian_produk || !id_pengguna) {
+        if (!id_varian_produk || !id_pengguna || !jumlah) {
             return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
-        await dbModel.postKaryawanTambahPenjualanOffline(id_varian_produk, id_pengguna);
-        res.status(201).json({ pesan: 'Penjualan offline berhasil ditambahkan' });
+        await dbModel.postKaryawanTambahPenjualanOffline(id_varian_produk, id_pengguna, jumlah);
+        await dbModel.updateStokVarianProduk(id_varian_produk, jumlah);
+        res.status(201).json({ pesan: 'Penjualan offline berhasil ditambahkan dan stok berhasil diupdate' });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -1706,6 +1711,36 @@ const pembeliCekKomentar = async (req, res) => {
     }
 }
 
+// Fungsi untuk menghapus penjualan offline oleh karyawan
+const karyawanDeleteProdukPenjualanOffline = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Ambil data penjualan offline berdasarkan id
+        const [rows] = await dbModel.getPenjualanOfflineById(id);
+        console.log("Rows:", rows);
+
+        // 2. Cek apakah data penjualan ditemukan
+        if (rows.length === 0) {
+            return res.status(404).json({ pesan: 'Data penjualan tidak ditemukan' });
+        }
+
+        const { id_varian_produk, jumlah } = rows[0]; // sesuaikan field dengan struktur tabel Anda
+
+        // 3. Kembalikan stok ke varian_produk
+        await dbModel.kembalikanStokVarianProduk(id_varian_produk, jumlah);
+
+        // 4. Hapus data penjualan offline
+        await dbModel.deleteKaryawanPenjualanOffline(id); // pastikan nama fungsi sesuai
+
+        return res.status(200).json({ pesan: 'Penjualan offline berhasil dihapus dan stok dikembalikan' });
+    } catch (error) {
+        console.error('Error saat menghapus penjualan offline:', error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
+
 
 
 module.exports = {
@@ -1729,7 +1764,7 @@ module.exports = {
     karyawanTampilPengajuanIzin,
     karyawanTambahPengajuanIzin,
     karyawanTambahAbsensi,
-    karyawanTambahProdukPenjualanOffline,
+    karyawanTampilTambahPenjualanOffline,
     karyawanTambahPenjualanOffline,
     adminTampilKaryawanAbsensi,
     adminTampilKaryawanIzin,
@@ -1775,5 +1810,6 @@ module.exports = {
     pembeliCekStatus,
     pembeliCekPengiriman,
     pembeliCekKomentar,
-    karyawanDeletePengajuanIzin
+    karyawanDeletePengajuanIzin,
+    karyawanDeleteProdukPenjualanOffline
 }

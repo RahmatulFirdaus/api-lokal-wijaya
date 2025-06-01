@@ -42,7 +42,7 @@ router.get('/pembeliTampilKeranjang', apiController.authenticateToken,apiControl
 
 //GET KARYAWAN
 router.get('/karyawanTampilPengajuanIzin', apiController.authenticateToken,apiController.karyawanTampilPengajuanIzin);
-router.get('/karyawanTambahProdukPenjualanOffline', apiController.karyawanTambahProdukPenjualanOffline); 
+router.get('/karyawanTampilTambahProdukPenjualanOffline', apiController.karyawanTampilTambahPenjualanOffline); 
 
 
 //POST PEMBELI
@@ -52,7 +52,7 @@ router.post('/pembeliTambahKeranjang', apiController.authenticateToken, apiContr
 //POST KARYAWAN
 router.post('/karyawanTambahPengajuanIzin', apiController.authenticateToken,apiController.karyawanTambahPengajuanIzin);
 router.post('/karyawanTambahAbsensi', apiController.authenticateToken,apiController.karyawanTambahAbsensi); //udah pasti absen
-router.post('/karyawanTambahPenjualanOffline', apiController.karyawanTambahPenjualanOffline); //udah pasti absen
+router.post('/karyawanTambahPenjualanOffline', apiController.authenticateToken, apiController.karyawanTambahPenjualanOffline); 
 
 
 //UPDATE
@@ -68,6 +68,7 @@ router.patch('/pembeliUpdateProfileEmail', apiController.authenticateToken, apiC
 
 //DELETE
 router.delete('/pembeliDeleteKeranjang/:id', apiController.pembeliDeleteKeranjang); //id diisi dengan id keranjang
+router.delete('/karyawanDeleteProdukPenjualanOffline/:id', apiController.karyawanDeleteProdukPenjualanOffline); //id diisi dengan id produk penjualan offline
 
 
 

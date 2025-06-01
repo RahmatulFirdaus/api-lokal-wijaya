@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const deleteKaryawanPenjualanOffline = (id) => {
+    const SQLQuery = `DELETE FROM karyawan_penjualan_offline WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+}
+
 const deleteKaryawanPengajuanIzin = (id) => {
     const SQLQuery = `DELETE FROM karyawan_pengajuan_izin WHERE id = ?`;
     return dbPool.query(SQLQuery, [id]);
@@ -116,6 +121,11 @@ const getItemOrderById = (id) => {
     return dbPool.query(SQLQuery, [id]);
 };
 
+const getPenjualanOfflineById = (id) => {
+    const SQLQuery = `SELECT id_varian_produk, jumlah FROM karyawan_penjualan_offline WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+};
+
 const kembalikanStokVarianProduk = (id_varian_produk, jumlah_order) => {
     const SQLQuery = `UPDATE varian_produk SET stok = stok + ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [jumlah_order, id_varian_produk]);
@@ -129,7 +139,7 @@ const getStokVarianProduk = (id_varian_produk) => {
 
 
 const updateStokVarianProduk = (id_varian_produk, jumlah_order) => {
-    const SQLQuery = `UPDATE varian_produk SET stok = stok - ? WHERE id = ?`;
+    const SQLQuery = `UPDATE varian_produk SET stok = stok - ? WHERE id = ?`; //diisi dengan id varian_produk
     return dbPool.query(SQLQuery, [jumlah_order, id_varian_produk]);
 };
 
@@ -303,13 +313,13 @@ const getAdminTampilAbsensiKaryawan = () => {
     return dbPool.query(SQLQuery);
 }
 
-const postKaryawanTambahPenjualanOffline = (id_varian_produk, id_pengguna) => {
-    const SQLQuery = `INSERT INTO karyawan_penjualan_offline (id_varian_produk, id_pengguna) VALUES (?, ?) `;
-    return dbPool.query(SQLQuery, [id_varian_produk, id_pengguna]);
+const postKaryawanTambahPenjualanOffline = (id_varian_produk, id_pengguna, jumlah) => {
+    const SQLQuery = `INSERT INTO karyawan_penjualan_offline (id_varian_produk, id_pengguna, jumlah) VALUES (?, ?, ?) `;
+    return dbPool.query(SQLQuery, [id_varian_produk, id_pengguna, jumlah]);
 }
 
 const getKaryawanPenjualanOffline = () => {
-    const SQLQuery = `SELECT produk.nama AS nama_produk, produk.harga, varian_produk.warna, varian_produk.ukuran, pengguna.nama, karyawan_penjualan_offline.tanggal from produk join varian_produk on varian_produk.id_produk = produk.id join karyawan_penjualan_offline on karyawan_penjualan_offline.id_varian_produk = varian_produk.id join pengguna on karyawan_penjualan_offline.id_pengguna = pengguna.id`;
+    const SQLQuery = `SELECT karyawan_penjualan_offline.id, produk.nama AS nama_produk, produk.harga, varian_produk.warna, varian_produk.ukuran, pengguna.nama, karyawan_penjualan_offline.tanggal, karyawan_penjualan_offline.jumlah, varian_produk.link_gambar_varian from produk join varian_produk on varian_produk.id_produk = produk.id join karyawan_penjualan_offline on karyawan_penjualan_offline.id_varian_produk = varian_produk.id join pengguna on karyawan_penjualan_offline.id_pengguna = pengguna.id`;
     return dbPool.query(SQLQuery);
 }
 
@@ -531,5 +541,7 @@ module.exports = {
     cekStatusOrderan,
     cekStatusPengiriman,
     getPembeliKomentar,
-    deleteKaryawanPengajuanIzin
+    deleteKaryawanPengajuanIzin,
+    deleteKaryawanPenjualanOffline,
+    getPenjualanOfflineById
  }
