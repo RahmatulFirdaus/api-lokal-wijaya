@@ -304,7 +304,7 @@ const getAdminTampilPengajuanIzinKaryawanDetail = (id) => {
 }
 
 const getAdminTampilPengajuanIzinKaryawan = () => {
-    const SQLQuery = `SELECT pengguna.nama, karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir FROM pengguna JOIN karyawan_pengajuan_izin ON pengguna.id = karyawan_pengajuan_izin.id_pengguna`;
+    const SQLQuery = `SELECT karyawan_pengajuan_izin.id, pengguna.nama, karyawan_pengajuan_izin.tipe_izin, karyawan_pengajuan_izin.deskripsi, karyawan_pengajuan_izin.status, karyawan_pengajuan_izin.tanggal_mulai, karyawan_pengajuan_izin.tanggal_akhir FROM pengguna JOIN karyawan_pengajuan_izin ON pengguna.id = karyawan_pengajuan_izin.id_pengguna`;
     return dbPool.query(SQLQuery);
 }
 
