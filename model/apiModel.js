@@ -144,7 +144,7 @@ const updateStokVarianProduk = (id_varian_produk, jumlah_order) => {
 };
 
 const getAdminTampilProdukPerluRestok = () => {
-    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, varian_produk.stok FROM varian_produk INNER JOIN produk ON varian_produk.id_produk = produk.id WHERE varian_produk.stok < 1 ORDER BY produk.nama ASC;`;
+    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.link_gambar_varian, varian_produk.warna, varian_produk.ukuran, varian_produk.stok FROM varian_produk INNER JOIN produk ON varian_produk.id_produk = produk.id WHERE varian_produk.stok < 1 ORDER BY produk.nama ASC;`;
     return dbPool.query(SQLQuery);
 }
 

@@ -1313,16 +1313,48 @@ const adminUpdateVerifikasiPembayaran = async (req, res) => {
 // fungsi untuk menampilkan data faktur online admin
 const adminTampilFakturOnline = async (req, res) => {
     try {
-        const [data] = await dbModel.getAdminTampilFakturOnline();
-        if (data.length === 0) {
+        const [rows] = await dbModel.getAdminTampilFakturOnline();
+
+        if (rows.length === 0) {
             return res.status(404).json({ pesan: 'Data faktur online tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data faktur online berhasil diambil', data: data });
+
+        // Grup berdasarkan nomor_faktur
+        const fakturMap = new Map();
+
+        rows.forEach(item => {
+            const fakturKey = item.nomor_faktur;
+
+            if (!fakturMap.has(fakturKey)) {
+                fakturMap.set(fakturKey, {
+                    nomor_faktur: item.nomor_faktur,
+                    tanggal_faktur: moment(item.tanggal_faktur).locale('id').format('DD MMMM YYYY, HH:mm'),
+                    id: item.id,
+                    nama_pengguna: item.nama_pengguna,
+                    items: []
+                });
+            }
+
+            fakturMap.get(fakturKey).items.push({
+                nama_barang: item.nama_barang,
+                warna: item.warna,
+                ukuran: item.ukuran,
+                jumlah_order: item.jumlah_order,
+                harga: item.harga
+            });
+        });
+
+        const data = Array.from(fakturMap.values());
+
+        return res.status(200).json({
+            pesan: 'Data faktur online berhasil diambil',
+            data: data
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
-}
+};
 
 //fungsi untuk menampilkan data ulasan setiap produk
 const adminTampilUlasanProduk = async (req, res) => {
