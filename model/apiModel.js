@@ -81,9 +81,9 @@ const getAdminCekDataAkun = (username, email) => {
     return dbPool.query(SQLQuery, [username, email]);
 }
 
-const postAdminDataAkun = (username, password, nama, email, nomor_telp, role) => {
+const postAdminDataAkun = (username, password, nama_lengkap, email, nomor_telp, role) => {
     const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role) VALUES (?, ?, ?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [username, password, nama, email, nomor_telp, role]);
+    return dbPool.query(SQLQuery, [username, password, nama_lengkap, email, nomor_telp, role]);
 }
 
 const updateAdminDataAkun = (id, username, password, nama, email, nomor_telp, role) => {
@@ -102,12 +102,12 @@ const updateAdminStatusPengiriman = (id, status) => {
 }
 
 const getAdminTampilPengirimanDetail = (id) => {
-    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, pengguna.nama, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE pengiriman.id = ?;`;
+    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE pengiriman.id = ?;`;
     return dbPool.query(SQLQuery, [id]);
 }
 
 const getAdminTampilPengiriman = () => {
-    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, pengguna.nama, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk;`;
+    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk;`;
     return dbPool.query(SQLQuery);
 }
 

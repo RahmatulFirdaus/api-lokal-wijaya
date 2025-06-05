@@ -1404,17 +1404,22 @@ const adminTampilPengiriman = async (req, res) => {
                 alamat_pengiriman,
                 status_pengiriman,
                 tanggal_pengiriman,
+                nama_pengguna,
                 nama,
                 warna,
                 ukuran,
+                harga_satuan,
+                total_harga,
                 jumlah_order
             } = row;
 
             if (!grouped[id_pengiriman]) {
                 grouped[id_pengiriman] = {
                     id_pengiriman,
+                    nama_pengguna,
                     alamat_pengiriman,
                     status_pengiriman,
+                                    total_harga,
                     // Format tanggal menggunakan timeMoment
                     tanggal_pengiriman: timeMoment(tanggal_pengiriman).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
                     items: []
@@ -1425,6 +1430,7 @@ const adminTampilPengiriman = async (req, res) => {
                 nama,
                 warna,
                 ukuran,
+                harga_satuan,
                 jumlah_order
             });
         });
@@ -1450,20 +1456,25 @@ const adminTampilPengirimanDetail = async (req, res) => {
 
         const {
             id_pengiriman,
+            nama_pengguna,
             alamat_pengiriman,
+            total_harga,
             status_pengiriman,
             tanggal_pengiriman
         } = rows[0];
 
         const formattedData = {
             id_pengiriman,
+            nama_pengguna,
             alamat_pengiriman,
             status_pengiriman,
+            total_harga,
             tanggal_pengiriman: timeMoment(tanggal_pengiriman).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
             items: rows.map(item => ({
                 nama: item.nama,
                 warna: item.warna,
                 ukuran: item.ukuran,
+                harga_satuan: item.harga_satuan,
                 jumlah_order: item.jumlah_order
             }))
         };
@@ -1483,6 +1494,9 @@ const adminUpdatePengiriman = async (req, res) => {
     try {
         const { id } = req.params; // Mengambil id dari parameter URL
         const { status_pengiriman } = req.body; // Mengambil status dari body request
+
+        console.log("ID Pengiriman:", id);
+        console.log("Status Pengiriman:", status_pengiriman);
 
         // Validasi Pastikan semua field diisi
         if (!status_pengiriman) {
@@ -1505,7 +1519,11 @@ const adminTampilDataAkun = async (req, res) => {
         if (data.length === 0) {
             return res.status(404).json({ pesan: 'Data akun tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data akun berhasil diambil', data: data });
+        return res.status(200).json({ pesan: 'Data akun berhasil diambil', data: data.map((item) => ({
+            ...item,
+            created_at: timeMoment(item.created_at).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+        }))
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -1516,6 +1534,13 @@ const adminTampilDataAkun = async (req, res) => {
 const adminTambahAkun = async (req, res) => {
     try {
         const { username, password, nama_lengkap, nomor_telepon, email, role } = req.body; // Mengambil data dari body request
+
+        console.log("Username:", username);
+        console.log("Password:", password);
+        console.log("Nama Lengkap:", nama_lengkap);
+        console.log("Nomor Telepon:", nomor_telepon);
+        console.log("Email:", email);
+        console.log("Role:", role);
 
         // Validasi Pastikan semua field diisi
         if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
@@ -1531,7 +1556,7 @@ const adminTambahAkun = async (req, res) => {
 
 
         // Simpan data ke database
-        await dbModel.postAdminDataAkun(username, password, nama_lengkap, nomor_telepon, email);
+        await dbModel.postAdminDataAkun(username, password, nama_lengkap, email, nomor_telepon, email);
         res.status(201).json({ pesan: 'Akun berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
@@ -1545,13 +1570,21 @@ const adminUpdateAkun = async (req, res) => {
         const { id } = req.params; // Mengambil id dari parameter URL
         const { username, password, nama_lengkap, nomor_telepon, email, role } = req.body; // Mengambil data dari body request
 
+        console.log("ID:", id);
+        console.log("Username:", username);
+        console.log("Password:", password);
+        console.log("Nama Lengkap:", nama_lengkap);
+        console.log("Nomor Telepon:", nomor_telepon);
+        console.log("Email:", email);
+        console.log("Role:", role);
+
         // Validasi Pastikan semua field diisi
         if (!username || !password || !nama_lengkap || !nomor_telepon || !email || !role) {
             return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
         // Simpan data ke database
-        await dbModel.updateAdminDataAkun(id, username, password, nama_lengkap, nomor_telepon, email, role);
+        await dbModel.updateAdminDataAkun(id, username, password, nama_lengkap,email, nomor_telepon, role);
         res.status(200).json({ pesan: 'Akun berhasil diupdate' });
     } catch (error) {
         console.error(error);

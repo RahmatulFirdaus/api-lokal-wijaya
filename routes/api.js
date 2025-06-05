@@ -102,7 +102,7 @@ router.get('/adminTampilUlasanProduk/:id', apiController.adminTampilUlasanProduk
 router.get('/adminTampilProdukPerluRestok', apiController.adminTampilProdukPerluRestok); //sepaket ama laporan
 router.get('/adminTampilPengiriman', apiController.adminTampilPengiriman); //sepaket ama laporan tapi ga semua
 router.get('/adminTampilPengirimanDetail/:id', apiController.adminTampilPengirimanDetail); //ID diisi dengan id pengiriman
-router.get('/adminTampilDataAkun', apiController.adminTampilDataAkun); //ID diisi dengan id pengiriman
+router.get('/adminTampilDataAkun', apiController.adminTampilDataAkun); 
 
 //tambahan diluar rancangan
 router.get('/adminTampilProdukEco', apiController.adminTampilProdukEco);
@@ -122,7 +122,7 @@ router.patch('/adminUpdateProduk/:id', upload.array('link_gambar', 10), apiContr
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman
-router.patch('/adminUpdateAkun', apiController.adminUpdateAkun); 
+router.patch('/adminUpdateAkun/:id', apiController.adminUpdateAkun); 
 
 //UPDATE diluar rancangan
 router.patch('/adminUpdateHargaProdukEco', apiController.adminUpdateHargaProdukEco); //id diisi dengan id produk
@@ -131,6 +131,7 @@ router.patch('/adminUpdateHargaProdukEco', apiController.adminUpdateHargaProdukE
 router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id diisi dengan id produk
 router.delete('/adminDeleteVarianProduk/:id', apiController.adminDeleteVarianProduk); //id diisi dengan id varian produk
 router.delete('/adminDeleteMetodePembayaran/:id', apiController.adminDeleteMetodePembayaran); //id diisi dengan id metode pembayaran
+router.delete('/adminDeleteAkun/:id', apiController.adminDeleteAkun); //id diisi dengan id akun
 
 
 //Laporan Admin External
