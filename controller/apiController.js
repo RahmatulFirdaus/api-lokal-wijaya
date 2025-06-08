@@ -172,7 +172,7 @@ const generateNomorFaktur = () => {
 // Fungsi untuk menangani proses pemesanan produk oleh pembeli
 const pembeliOrderProduk = async (req, res) => {
     try {
-        const id_pengguna = req.user.id; // Mengambil id_pengguna dari token JWT
+        const id_pengguna = req.user.id;
         const {
             id_metode_pembayaran,
             total_harga,
@@ -181,16 +181,6 @@ const pembeliOrderProduk = async (req, res) => {
             alamat_pengiriman
         } = req.body;
 
-        console.log("ID Pengguna:", id_pengguna);
-        console.log("ID Metode Pembayaran:", id_metode_pembayaran);
-        console.log("Total Harga:", total_harga);
-        console.log("Nama Pengirim:", nama_pengirim);
-        console.log("Bank Pengirim:", bank_pengirim);
-        console.log("Alamat Pengiriman:", alamat_pengiriman);
-        
-        
-
-        // Ambil banyak file bukti transfer
         const bukti_transfer_files = req.files || [];
         const bukti_transfer_filenames = bukti_transfer_files.map(file => file.filename);
 
@@ -207,9 +197,13 @@ const pembeliOrderProduk = async (req, res) => {
         const nomor_faktur = generateNomorFaktur();
         await dbModel.postFakturPembeli(id_order, nomor_faktur);
 
-        // Simpan semua bukti transfer (asumsikan menyimpan satu per entry)
+        // 🔁 Buat id_pembayaran satu kali saja
+        const [resultPembayaran] = await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim);
+        const id_pembayaran = resultPembayaran.insertId;
+
+        // 🔁 Simpan semua bukti_transfer dengan id_pembayaran yang sama
         for (const filename of bukti_transfer_filenames) {
-            await dbModel.postDataPembayaranPembeli(id_order, nama_pengirim, bank_pengirim, filename);
+            await dbModel.postDataBuktiTransferPembeli(id_pembayaran, filename);
         }
 
         res.status(201).json({ pesan: 'Produk berhasil dipesan' });

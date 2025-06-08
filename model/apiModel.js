@@ -164,7 +164,7 @@ const updateAdminVerifikasiPembayaran = (id, status, catatan_admin) => {
 }
 
 const getAdminTampilVerifikasiPembayaran = () => {
-    const SQLQuery = `SELECT orderan.id as id_orderan, orderan.status, orderan.catatan_admin, pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, pembayaran.bukti_transfer FROM orderan JOIN pembayaran ON pembayaran.id_orderan = orderan.id `;
+    const SQLQuery = `SELECT orderan.id as id_orderan, orderan.status, orderan.catatan_admin, pembayaran.nama_pengirim, pembayaran.bank_pengirim, pembayaran.tanggal_transfer, bukti_transfer.bukti_transfer FROM orderan JOIN pembayaran ON pembayaran.id_orderan = orderan.id JOIN bukti_transfer ON bukti_transfer.id_pembayaran= pembayaran.id`;
     return dbPool.query(SQLQuery);
 }
 
@@ -415,9 +415,14 @@ const getPembeliRiwayatTransaksi = (id) => {
     return dbPool.query(SQLQuery, [id]);
 }
 
-const postDataPembayaranPembeli= (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) => {
-    const SQLQuery = `INSERT INTO pembayaran (id_orderan, nama_pengirim, bank_pengirim, bukti_transfer) VALUES (?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_orderan, nama_pengirim, bank_pengirim, bukti_transfer]);
+const postDataPembayaranPembeli= (id_orderan, nama_pengirim, bank_pengirim) => {
+    const SQLQuery = `INSERT INTO pembayaran (id_orderan, nama_pengirim, bank_pengirim) VALUES (?, ?, ?)`;
+    return dbPool.query(SQLQuery, [id_orderan, nama_pengirim, bank_pengirim]);
+}
+
+const postDataBuktiTransferPembeli = (id_pembayaran, link_bukti_transfer) => {
+    const SQLQuery = `INSERT INTO bukti_transfer (id_pembayaran, bukti_transfer) VALUES (?, ?)`;
+    return dbPool.query(SQLQuery, [id_pembayaran, link_bukti_transfer]);
 }
 
 const updateItemOrder = (id_orderan, id_pengguna) => {
@@ -543,5 +548,6 @@ module.exports = {
     getPembeliKomentar,
     deleteKaryawanPengajuanIzin,
     deleteKaryawanPenjualanOffline,
-    getPenjualanOfflineById
+    getPenjualanOfflineById,
+    postDataBuktiTransferPembeli
  }
