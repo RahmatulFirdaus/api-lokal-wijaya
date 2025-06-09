@@ -891,21 +891,46 @@ const adminDeleteVarianProduk = async (req, res) => {
 //fungsi untuk menampilkan data hasil transaksi online admin
 const adminTampilHasilTransaksiOnline = async (req, res) => {
     try {
-        const [data] = await dbModel.getAdminTampilHasilTransaksiOnline();
-        if (data.length === 0) {
+        const [rows] = await dbModel.getAdminTampilHasilTransaksiOnline();
+        if (rows.length === 0) {
             return res.status(404).json({ pesan: 'Data transaksi online tidak ditemukan' });
         }
-        return res.status(200).json({ pesan: 'Data transaksi online berhasil diambil', data: 
-            data.map((item) => ({
-                ...item,
-                tanggal_order: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
-            })),
+
+        const groupedData = {};
+
+        rows.forEach(item => {
+            const orderId = item.id_orderan;
+
+            if (!groupedData[orderId]) {
+                groupedData[orderId] = {
+                    id_orderan: item.id_orderan,
+                    nama_pengguna: item.nama_pengguna,
+                    status: item.status,
+                    tanggal_order: timeMoment(item.tanggal_order).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+                    total_harga: item.total_harga,
+                    produk: []
+                };
+            }
+
+            groupedData[orderId].produk.push({
+                jumlah_order: item.jumlah_order,
+                nama_produk: item.nama_produk,
+                harga_satuan: item.harga_satuan,
+                warna: item.warna,
+                ukuran: item.ukuran
+            });
         });
+
+        return res.status(200).json({
+            pesan: 'Data transaksi online berhasil diambil',
+            data: Object.values(groupedData)
+        });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
     }
-}
+};
 
 //fungsi untuk menampilkan produk eco
 const adminTampilProdukEco = async (req, res) => {
@@ -947,17 +972,18 @@ const adminTambahHargaProdukEco = async (req, res) => {
 //fungsi untuk mengubah harga asli produk eco
 const adminUpdateHargaProdukEco = async (req, res) => {
     try {
-        const { id_produk, harga_asli } = req.body;
+        const { id } = req.params; // Mengambil id_produk dari parameter URL
+        const { harga_asli } = req.body;
 
-        console.log("ID Produk:", id_produk);
+        console.log("ID Produk:", id);
         console.log("Harga Asli:", harga_asli);
 
-        if (!id_produk || !harga_asli) {
+        if (!id || !harga_asli) {
             return res.status(400).json({
                 pesan: 'Data tidak lengkap. Harap isi ID produk dan harga asli.',
             });
         }
-        await dbModel.updateAdminUbahProdukEco(id_produk,harga_asli);
+        await dbModel.updateAdminUbahProdukEco(id,harga_asli);
 
         res.status(201).json({
             pesan: 'Berhasil diubah',
@@ -1011,42 +1037,66 @@ const adminUpdateHargaProdukEco = async (req, res) => {
 // }
 
 const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
-    try {
-      // Ambil data online dan offline secara paralel
-      const [dataOnlineResponse, dataOfflineResponse] = await Promise.all([
-        dbModel.getAdminTampilPenjualanHarianOnline(),
-        dbModel.getAdminTampilPenjualanHarianOffline(),
-      ]);
-  
-      const dataOnline = dataOnlineResponse[0] || [];
-      const dataOffline = dataOfflineResponse[0] || [];
-  
-      // Format tanggal
-      const formattedDataOnline = dataOnline.map(item => ({
-        ...item,
-        tanggal_order: timeMoment(item.tanggal_order)
-          .tz('Asia/Makassar')
-          .format('YYYY-MM-DD HH:mm:ss'),
-      }));
-  
-      const formattedDataOffline = dataOffline.map(item => ({
-        ...item,
-        tanggal: timeMoment(item.tanggal)
-          .tz('Asia/Makassar')
-          .format('YYYY-MM-DD HH:mm:ss'),
-      }));
-  
-      return res.status(200).json({
-        pesan: 'Data transaksi berhasil diambil',
-        data_online: formattedDataOnline,
-        data_offline: formattedDataOffline,
+  try {
+    // Ambil data online dan offline secara paralel
+    const [dataOnlineResponse, dataOfflineResponse] = await Promise.all([
+      dbModel.getAdminTampilPenjualanHarianOnline(),
+      dbModel.getAdminTampilPenjualanHarianOffline(),
+    ]);
+
+    const dataOnline = dataOnlineResponse[0] || [];
+    const dataOffline = dataOfflineResponse[0] || [];
+
+    // Format data online: Kelompok berdasarkan id_orderan
+    const groupedOnline = {};
+
+    dataOnline.forEach(item => {
+      const formattedTanggal = timeMoment(item.tanggal_order)
+        .tz('Asia/Makassar')
+        .format('YYYY-MM-DD HH:mm:ss');
+
+      if (!groupedOnline[item.id_orderan]) {
+        groupedOnline[item.id_orderan] = {
+          id_orderan: item.id_orderan,
+          nama_pengguna: item.nama_pengguna,
+          tanggal_order: formattedTanggal,
+          total_harga: item.total_harga,
+          produk: [],
+        };
+      }
+
+      groupedOnline[item.id_orderan].produk.push({
+        nama_produk: item.nama_produk,
+        jumlah_order: item.jumlah_order,
+        harga_satuan: item.total_harga / item.jumlah_order, // hitung harga per item
+        warna: item.warna,
+        ukuran: item.ukuran,
+        link_gambar_varian: item.link_gambar_varian,
       });
-      
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ pesan: 'Internal server error' });
-    }
-  };
+    });
+
+    const formattedDataOnline = Object.values(groupedOnline);
+
+    // Format data offline
+    const formattedDataOffline = dataOffline.map(item => ({
+      ...item,
+      tanggal: timeMoment(item.tanggal)
+        .tz('Asia/Makassar')
+        .format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    return res.status(200).json({
+      pesan: 'Data transaksi berhasil diambil',
+      data_online: formattedDataOnline,
+      data_offline: formattedDataOffline,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ pesan: 'Internal server error' });
+  }
+};
+
   
   const adminLaporanHarian = async (req, res) => {
     try {

@@ -125,7 +125,7 @@ router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman);
 router.patch('/adminUpdateAkun/:id', apiController.adminUpdateAkun); 
 
 //UPDATE diluar rancangan
-router.patch('/adminUpdateHargaProdukEco', apiController.adminUpdateHargaProdukEco); //id diisi dengan id produk
+router.patch('/adminUpdateHargaProdukEco/:id', apiController.adminUpdateHargaProdukEco); //id diisi dengan id produk
 
 //DELETE ADMIN
 router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id diisi dengan id produk
