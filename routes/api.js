@@ -118,7 +118,7 @@ router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEc
 
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
-router.patch('/adminUpdateProduk/:id', upload.array('link_gambar', 10), apiController.adminUpdateProduk);
+router.put('/adminUpdateProduk/:id', upload.array('link_gambar', 10), apiController.adminUpdateProduk);
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman
@@ -136,5 +136,14 @@ router.delete('/adminDeleteAkun/:id', apiController.adminDeleteAkun); //id diisi
 
 //Laporan Admin External
 router.get('/adminLaporanHarian', apiController.adminLaporanHarian); 
+
+
+
+//tambahan catatan panelis
+router.get('/adminTampilGajiKaryawan', apiController.adminTampilGajiKaryawan);
+router.get('/adminTampilDataPenggunaKaryawan', apiController.adminTampilDataPenggunaKaryawan);
+router.post('/adminTambahGajiKaryawan', apiController.adminTambahGajiKaryawan);
+router.patch('/adminUpdateGajiKaryawan/:id', apiController.adminUpdateGajiKaryawan);
+router.delete('/adminDeleteGajiKaryawan/:id', apiController.adminDeleteGajiKaryawan);
 
 module.exports = router;

@@ -832,21 +832,6 @@ const adminUpdateProduk = async (req, res) => {
       });
     }
 
-    // PERBAIKAN: Hanya update gambar utama jika ada file baru
-    const gambarUtama = link_gambar.length > 0 ? link_gambar[0].filename : null;
-    console.log("Gambar Utama:", gambarUtama);
-
-    // Update produk - dengan atau tanpa gambar baru
-    if (gambarUtama) {
-      // Ada gambar baru, update dengan gambar baru
-      await dbModel.updateProduk(id, nama_produk, deskripsi, harga_produk, gambarUtama);
-      console.log("✅ Update produk dengan gambar baru");
-    } else {
-      // Tidak ada gambar baru, update tanpa mengubah gambar
-      await dbModel.updateProdukTanpaGambar(id, nama_produk, deskripsi, harga_produk);
-      console.log("✅ Update produk tanpa mengubah gambar");
-    }
-
     let parsedVarian = [];
     try {
       parsedVarian = typeof varian === 'string' ? JSON.parse(varian) : varian;
@@ -858,40 +843,92 @@ const adminUpdateProduk = async (req, res) => {
       });
     }
 
-    // Process varian - hitung offset untuk gambar varian
-    let varianImageIndex = gambarUtama ? 1 : 0; // Skip first image if it's main product image
+    // PERBAIKAN: Pisahkan logika gambar utama dan gambar varian dengan benar
+    const varianYangPerluGambarBaru = parsedVarian.filter(v => v.has_new_image === true);
+    const jumlahGambarVarian = varianYangPerluGambarBaru.length;
+    
+    // Tentukan apakah ada gambar utama baru
+    const adaGambarUtamaBaru = link_gambar.length > jumlahGambarVarian;
+
+    console.log("🔍 Analisis Gambar:");
+    console.log("Total files:", link_gambar.length);
+    console.log("Varian perlu gambar baru:", jumlahGambarVarian);
+    console.log("Ada gambar utama baru:", adaGambarUtamaBaru);
+
+    let gambarUtama = null;
+    let varianImageStartIndex = 0;
+
+    // Set gambar utama dan index start untuk varian
+    if (adaGambarUtamaBaru) {
+      gambarUtama = link_gambar[0].filename;
+      varianImageStartIndex = 1; // Gambar varian mulai dari index 1
+      console.log("✅ Gambar utama baru:", gambarUtama);
+    } else {
+      varianImageStartIndex = 0; // Semua gambar untuk varian
+      console.log("ℹ️ Tidak ada gambar utama baru");
+    }
+
+    // Update produk - dengan atau tanpa gambar baru
+    if (gambarUtama) {
+      await dbModel.updateProduk(id, nama_produk, deskripsi, harga_produk, gambarUtama);
+      console.log("✅ Update produk dengan gambar baru");
+    } else {
+      await dbModel.updateProdukTanpaGambar(id, nama_produk, deskripsi, harga_produk);
+      console.log("✅ Update produk tanpa mengubah gambar");
+    }
+
+    // PERBAIKAN: Process varian dengan validasi ID yang lebih ketat
+    let currentVarianImageIndex = varianImageStartIndex;
 
     for (const v of parsedVarian) {
-      const { id_varian, warna, ukuran, stok, is_new } = v;
+      // PERBAIKAN: Gunakan id_varian secara konsisten
+      const { id_varian, warna, ukuran, stok, is_new, has_new_image } = v;
+
+      console.log(`\n🔄 Processing Varian: ${warna} (ID: ${id_varian})`);
+      console.log(`   - is_new: ${is_new}`);
+      console.log(`   - has_new_image: ${has_new_image}`);
+      console.log(`   - stok: ${stok}`);
+      console.log(`   - ukuran: ${ukuran}`);
+
+      // PERBAIKAN: Validasi ID untuk varian existing
+      if (!is_new && (!id_varian || id_varian === null || id_varian === undefined)) {
+        console.error(`❌ ID varian tidak valid untuk varian existing: ${warna}`);
+        continue; // Skip varian ini
+      }
 
       let filename = null;
       
-      // Jika varian baru dan ada file untuk varian ini
-      if (is_new && varianImageIndex < link_gambar.length) {
-        filename = link_gambar[varianImageIndex].filename;
-        varianImageIndex++;
-        console.log(`🟢 Varian baru dengan gambar: ${filename}`);
+      // Tentukan filename hanya jika has_new_image = true
+      if (has_new_image && currentVarianImageIndex < link_gambar.length) {
+        filename = link_gambar[currentVarianImageIndex].filename;
+        currentVarianImageIndex++;
+        console.log(`📸 Menggunakan gambar: ${filename} untuk varian ${warna}`);
       }
 
-      if (id_varian) {
-        // Update varian existing
-        if (filename) {
-          // Ada gambar baru untuk varian
+      if (id_varian && !is_new) {
+        // PERBAIKAN: Update varian existing dengan validasi ID yang ketat
+        if (has_new_image && filename) {
+          // Ada gambar baru untuk varian existing
           await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok, filename);
-          console.log(`🟡 Update Varian ID: ${id_varian} dengan gambar baru: ${filename}`);
+          console.log(`🟡 Update Varian ID: ${id_varian} dengan gambar baru: ${filename}, stok: ${stok}, ukuran: ${ukuran}`);
         } else {
-          // Tidak ada gambar baru, update tanpa mengubah gambar
+          // Tidak ada gambar baru, tapi tetap update stok dan data lainnya
           await dbModel.updateVarianProdukTanpaGambar(id_varian, warna, ukuran, stok);
-          console.log(`🟡 Update Varian ID: ${id_varian} tanpa mengubah gambar`);
+          console.log(`🟡 Update Varian ID: ${id_varian} tanpa mengubah gambar, stok: ${stok}, ukuran: ${ukuran}`);
         }
-      } else {
+      } else if (is_new) {
         // Tambah varian baru
-        await dbModel.insertVarianBaru(id, warna, ukuran, stok, filename);
-        console.log(`🟢 Tambah Varian Baru | Warna: ${warna} | Ukuran: ${ukuran} | Stok: ${stok} | Gambar: ${filename}`);
+        const finalFilename = filename || '';
+        
+        await dbModel.insertVarianBaru(id, warna, ukuran, stok, finalFilename);
+        console.log(`🟢 Tambah Varian Baru | Warna: ${warna} | Ukuran: ${ukuran} | Stok: ${stok} | Gambar: ${finalFilename || 'TIDAK ADA'}`);
       }
     }
 
+    // Update harga awal
     await dbModel.updateHargaAsli(id, harga_awal);
+    console.log("✅ Update harga awal selesai");
+
     console.log("✅ Update produk dan varian selesai.");
 
     return res.status(200).json({
@@ -1172,9 +1209,18 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
         // Ambil data penjualan online dan offline
         const [onlineResults] = await dbModel.getAdminLaporanTotalHargaOnline();
         const [offlineResults] = await dbModel.getAdminLaporanTotalHargaOffline();
+        // Ambil data gaji karyawan
+        const [gajiResults] = await dbModel.getGajiKaryawan();
 
         if (onlineResults.length === 0 && offlineResults.length === 0) {
             return res.status(404).json({ pesan: 'Data laporan tidak ditemukan' });
+        }
+
+        // Hitung total gaji harian (total gaji dibagi 30 hari)
+        let totalGajiHarian = 0;
+        if (gajiResults.length > 0) {
+            const totalGaji = gajiResults.reduce((sum, gaji) => sum + parseInt(gaji.gaji, 10), 0);
+            totalGajiHarian = Math.round(totalGaji / 30); // Pembulatan untuk hasil yang lebih bersih
         }
 
         // Gabungkan hasil laporan berdasarkan tanggal
@@ -1225,6 +1271,9 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
             const total_harian = total_penjualan_offline + total_penjualan_online;
             const total_keuntungan_harian = keuntungan_penjualan_offline + keuntungan_penjualan_online;
 
+            // Hitung keuntungan bersih setelah dikurangi gaji karyawan harian
+            const keuntungan_bersih = total_keuntungan_harian - totalGajiHarian;
+
             laporan.push({
                 tanggal: formattedTanggal,
                 total_penjualan_offline,
@@ -1232,7 +1281,9 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
                 keuntungan_penjualan_offline,
                 keuntungan_penjualan_online,
                 total_harian,
-                total_keuntungan_harian
+                total_keuntungan_harian,
+                gaji_karyawan_harian: totalGajiHarian,
+                keuntungan_bersih
             });
         }
 
@@ -1918,7 +1969,71 @@ const karyawanDeleteProdukPenjualanOffline = async (req, res) => {
     }
 };
 
+const adminTampilGajiKaryawan = async (req, res) => {
+    try {
+        const [data] = await dbModel.getGajiKaryawan();
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+    
+const adminTambahGajiKaryawan = async (req, res) => {
+    try {
+        const { id, jumlah_gaji } = req.body;
+        const [data] = await dbModel.postGajiKaryawan(id, jumlah_gaji);
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
 
+const adminUpdateGajiKaryawan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { jumlah_gaji } = req.body;
+        const [data] = await dbModel.updateGajiKaryawan(id, jumlah_gaji);
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+const adminDeleteGajiKaryawan = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [data] = await dbModel.deleteGajiKaryawan(id);
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+const adminTampilDataPenggunaKaryawan = async (req, res) => {
+    try {
+        const [data] = await dbModel.tampilDataPenggunaKaryawan();
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
 
 
 module.exports = {
@@ -1989,5 +2104,10 @@ module.exports = {
     pembeliCekPengiriman,
     pembeliCekKomentar,
     karyawanDeletePengajuanIzin,
-    karyawanDeleteProdukPenjualanOffline
+    karyawanDeleteProdukPenjualanOffline,
+    adminTampilGajiKaryawan,
+    adminTambahGajiKaryawan,
+    adminUpdateGajiKaryawan,
+    adminDeleteGajiKaryawan,
+    adminTampilDataPenggunaKaryawan
 }

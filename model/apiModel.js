@@ -1,23 +1,55 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const tampilDataPenggunaKaryawan = () => {
+    const SQLQuery = `SELECT pengguna.id, pengguna.nama 
+FROM pengguna 
+LEFT JOIN gaji_karyawan ON pengguna.id = gaji_karyawan.id_pengguna 
+WHERE pengguna.role = 'karyawan' AND gaji_karyawan.id_pengguna IS NULL;`;
+    return dbPool.query(SQLQuery);
+}
+
+const ubahStatusGajiKaryawan = (id_pengguna) => {
+    const SQLQuery = `update gaji_karyawan set status = 'belum' where id_pengguna = ?`;
+    return dbPool.query(SQLQuery, [id_pengguna]);
+}
+
+const deleteGajiKaryawan = (id_pengguna) => {
+    const SQLQuery = `delete from gaji_karyawan where id_pengguna = ?`;
+    return dbPool.query(SQLQuery, [id_pengguna]);
+}
+
+const updateGajiKaryawan = (id_pengguna, gaji) => {
+    const SQLQuery = `update gaji_karyawan set gaji = ? where id_pengguna = ?`;
+    return dbPool.query(SQLQuery, [gaji, id_pengguna]);
+}
+
+const postGajiKaryawan = (id_pengguna, gaji) => {
+    const SQLQuery = `insert into gaji_karyawan (id_pengguna, gaji) values (?, ?)`;
+    return dbPool.query(SQLQuery, [id_pengguna, gaji]);
+}
+
+const getGajiKaryawan = () => {
+    const SQLQuery = `select pengguna.id, pengguna.nama, gaji_karyawan.gaji from pengguna join gaji_karyawan on gaji_karyawan.id_pengguna = pengguna.id`;
+    return dbPool.query(SQLQuery);
+}
+
 const updateProdukTanpaGambar = async (id, nama, deskripsi, harga) => {
   const query = `
     UPDATE produk 
-    SET nama = ?, deskripsi = ?, harga = ?,
-    WHERE id = ?
-  `;
-  return await db.execute(query, [nama, deskripsi, harga, id]);
+    SET nama = ?, deskripsi = ?, harga = ?
+    WHERE id = ?`; // KOMA SEBELUM 'WHERE' DIHAPUS
+  return dbPool.query(query, [nama, deskripsi, harga, id]);
 };
 
 const updateVarianProdukTanpaGambar = async (id_varian, warna, ukuran, stok) => {
   const query = `
     UPDATE varian_produk 
-    SET warna = ?, ukuran = ?, stok = ?,
-    WHERE id = ?
-  `;
-  return await db.execute(query, [warna, ukuran, stok, id_varian]);
+    SET warna = ?, ukuran = ?, stok = ?
+    WHERE id = ?`; // KOMA SEBELUM 'WHERE' DIHAPUS
+  return dbPool.query(query, [warna, ukuran, stok, id_varian]);
 };
+
 
 const deleteKaryawanPenjualanOffline = (id) => {
     const SQLQuery = `DELETE FROM karyawan_penjualan_offline WHERE id = ?`;
@@ -235,6 +267,12 @@ const getAdminLaporanTotalHargaOffline = () => {
     return dbPool.query(SQLQuery);
 }
 
+// Fungsi baru untuk mengambil data gaji karyawan
+const getGajiKaryawanInfo = () => {
+    const SQLQuery = `SELECT gaji FROM gaji_karyawan;`;
+    return dbPool.query(SQLQuery);
+}
+
 const getAdminTampilPenjualanHarianOffline = () => {
     const SQLQuery = `SELECT karyawan_penjualan_offline.tanggal, produk.nama AS nama_produk, produk.harga, varian_produk.warna, varian_produk.ukuran, varian_produk.link_gambar_varian FROM karyawan_penjualan_offline JOIN pengguna ON pengguna.id = karyawan_penjualan_offline.id_pengguna JOIN varian_produk ON varian_produk.id = karyawan_penjualan_offline.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk ORDER BY karyawan_penjualan_offline.tanggal DESC;`;
     return dbPool.query(SQLQuery);
@@ -276,9 +314,17 @@ const deleteAdminProduk = (id) => {
 }
 
 const getAdminProduk = (id) => {
-    const SQLQuery = `SELECT id, nama, deskripsi, harga, link_gambar, kategori FROM produk WHERE id = ?;`;
+    const SQLQuery = `
+        SELECT 
+            p.id, p.nama, p.deskripsi, p.harga, p.link_gambar, p.kategori,
+            psd.harga_awal
+        FROM produk p
+        LEFT JOIN produk_sebelum_diskon psd ON p.id = psd.id_produk
+        WHERE p.id = ?;
+    `;
     return dbPool.query(SQLQuery, [id]);
 }
+
 
 const getAdminVarianProduk = (id) => {
     const SQLQuery = `SELECT id, id_produk, warna, ukuran, stok, link_gambar_varian FROM varian_produk WHERE id_produk = ?;`;
@@ -574,4 +620,11 @@ module.exports = {
     postHargaModal,
     updateProdukTanpaGambar,
     updateVarianProdukTanpaGambar,
+    getGajiKaryawan,
+    postGajiKaryawan,
+    updateGajiKaryawan,
+    deleteGajiKaryawan,
+    tampilDataPenggunaKaryawan,
+    ubahStatusGajiKaryawan,
+    getGajiKaryawanInfo
  }
