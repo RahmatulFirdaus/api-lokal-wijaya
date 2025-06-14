@@ -1495,6 +1495,7 @@ const adminTampilFakturOnline = async (req, res) => {
                     tanggal_faktur: moment(item.tanggal_faktur).locale('id').format('DD MMMM YYYY, HH:mm'),
                     id: item.id,
                     nama_pengguna: item.nama_pengguna,
+                    alamat_pengiriman : item.alamat_pengiriman,
                     items: []
                 });
             }

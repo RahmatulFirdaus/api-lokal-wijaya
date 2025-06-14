@@ -207,7 +207,7 @@ const getAdminTampilUlasanProduk = (id) => {
 }
 
 const getAdminTampilFakturOnline = () => {
-    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama as nama_pengguna, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id;`;
+    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama as nama_pengguna, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran, pengiriman.alamat_pengiriman FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id JOIN pengiriman ON orderan.id = pengiriman.id_orderan;`;
     return dbPool.query(SQLQuery);
 }
 
@@ -415,7 +415,7 @@ const getTampilUlasanProduk = (id) => {
 }
 
 const getTampilProduk = () => {
-    const SQLQuery = `SELECT produk.id AS id, produk.kategori, produk_sebelum_diskon.harga_awal, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id GROUP BY produk.id, produk.kategori, produk_sebelum_diskon.harga_awal, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
+    const SQLQuery = `SELECT produk.id AS id, produk.kategori, produk_sebelum_diskon.harga_awal, produk.nama AS nama_produk, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, SUM(varian_produk.stok) AS total_stok_produk, AVG(komentar.rating) AS rating FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id LEFT JOIN komentar ON komentar.id_produk = produk.id GROUP BY produk.id, produk.kategori, produk_sebelum_diskon.harga_awal, produk.nama, produk.deskripsi, produk.harga, produk.link_gambar;
 `;
     return dbPool.query(SQLQuery);
 }
