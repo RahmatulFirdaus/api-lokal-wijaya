@@ -146,4 +146,9 @@ router.post('/adminTambahGajiKaryawan', apiController.adminTambahGajiKaryawan);
 router.patch('/adminUpdateGajiKaryawan/:id', apiController.adminUpdateGajiKaryawan);
 router.delete('/adminDeleteGajiKaryawan/:id', apiController.adminDeleteGajiKaryawan);
 
+
+//khusus verifikasi daftar akun
+router.get('/admin/pending-users', apiController.getPendingUsers);
+router.patch('/admin/update-user-status', apiController.updateUserStatus);
+
 module.exports = router;

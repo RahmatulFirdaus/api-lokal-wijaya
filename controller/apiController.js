@@ -42,29 +42,47 @@ const authenticateToken = (req, res, next) => {
 // Fungsi untuk menangani login
 const login = async (req, res) => {
     try {
-        // pada body request, kita ambil username dan password
         const { username, password } = req.body;
 
-        // jika username dan password kosong, kita kembalikan error
         if (!username || !password) {
             return res.status(400).json({ pesan: 'Username dan Password tidak ditemukan' });
         }
-        // jika username dan password ada, kita ambil data user dari database
+
         const [data] = await dbModel.getUsernameLogin(username);
         if (data.length === 0) {
             return res.status(401).json({ pesan: 'Username tidak ditemukan' });
         }
-        // jika user ditemukan, kita cek passwordnya
+
         const user = data[0];
         if (user.password !== password) {
             return res.status(401).json({ pesan: 'Password salah' });
         }
 
+        // Cek status akun
+        if (user.status === 'pending') {
+            return res.status(403).json({ 
+                pesan: 'Akun Anda masih menunggu persetujuan admin' 
+            });
+        }
+
+        if (user.status === 'ditolak') {
+            return res.status(403).json({ 
+                pesan: 'Akun Anda telah ditolak oleh admin' 
+            });
+        }
+
+        // Hanya user dengan status 'approved' yang bisa login
+        if (user.status !== 'diterima') {
+            return res.status(403).json({ 
+                pesan: 'Akun Anda tidak dapat digunakan' 
+            });
+        }
+
         const token = generateToken(user);
 
-        // jika password benar, kita kembalikan data user
-        return res.status(200).json({ pesan: 'Login berhasil',
-             data: {
+        return res.status(200).json({ 
+            pesan: 'Login berhasil',
+            data: {
                 id: user.id,
                 username: user.username,
                 nama: user.nama,
@@ -73,7 +91,7 @@ const login = async (req, res) => {
                 role: user.role,
                 token: token
             }
-            });
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -82,21 +100,14 @@ const login = async (req, res) => {
 
 const daftar = async (req, res) => {
     try {
-        // Ambil data dari body request
         const { username, password, nama, email, confirmPassword, no_telp } = req.body;
 
-        // Validasi Pastikan semua field diisi
+        // Validasi input
         if (!username || !password || !nama || !email || !confirmPassword || !no_telp) {
             return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
-        console.log("Username:", username);
-        console.log("Password:", password);
-        console.log("Nama:", nama);
-        console.log("Email:", email);
-        console.log("Confirm Password:", confirmPassword);
-        console.log("No Telepon:", no_telp);
 
-        // Validasi: Pastikan password dan confirmPassword cocok
+        // Validasi password match
         if (password !== confirmPassword) {
             return res.status(400).json({ pesan: 'Password dan Konfirmasi Password tidak cocok' });
         }
@@ -106,9 +117,13 @@ const daftar = async (req, res) => {
         if (data.length > 0) {
             return res.status(400).json({ pesan: 'Username atau Email sudah terdaftar' });
         }
-        // Simpan data pengguna baru ke database
+
+        // Simpan dengan status pending
         await dbModel.postDaftar(username, password, nama, email, no_telp);
-        res.status(201).json({ pesan: 'Pendaftaran berhasil' });
+        
+        res.status(201).json({ 
+            pesan: 'Pendaftaran berhasil! Akun Anda menunggu persetujuan admin.' 
+        });
 
     } catch (error) {
         console.error(error);
@@ -2036,6 +2051,34 @@ const adminTampilDataPenggunaKaryawan = async (req, res) => {
     }
 }
 
+// Controller untuk melihat daftar pengguna pending
+const getPendingUsers = async (req, res) => {
+    try {
+        const [data] = await dbModel.getPendingUsers();
+        res.status(200).json({ data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
+// Controller untuk approve/reject user
+const updateUserStatus = async (req, res) => {
+    try {
+        const { id, status } = req.body; // 'approved' atau 'rejected'
+
+        console.log(id, status);
+        
+        await dbModel.updateUserStatus(id, status);
+        res.status(200).json({ 
+            pesan: 'Status pengguna berhasil diperbarui', 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
 
 module.exports = {
     login,
@@ -2110,5 +2153,7 @@ module.exports = {
     adminTambahGajiKaryawan,
     adminUpdateGajiKaryawan,
     adminDeleteGajiKaryawan,
-    adminTampilDataPenggunaKaryawan
+    adminTampilDataPenggunaKaryawan,
+    getPendingUsers,
+    updateUserStatus
 }

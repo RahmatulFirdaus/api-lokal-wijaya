@@ -135,7 +135,7 @@ const getAdminCekDataAkun = (username, email) => {
 }
 
 const postAdminDataAkun = (username, password, nama_lengkap, email, nomor_telp, role) => {
-    const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role) VALUES (?, ?, ?, ?, ?, ?)`;
+    const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role, status) VALUES (?, ?, ?, ?, ?, ?, 'diterima')`;
     return dbPool.query(SQLQuery, [username, password, nama_lengkap, email, nomor_telp, role]);
 }
 
@@ -513,14 +513,25 @@ const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order)
 }
 
 const getUsernameLogin = (username) => {
-    const SQLQuery = `SELECT * FROM pengguna WHERE username = ? LIMIT 1`;
+    const SQLQuery = `SELECT id, username, password, nama, email, nomor_telp, role, status FROM pengguna WHERE username = ?`;
     return dbPool.query(SQLQuery, [username]);
 }
 
 const postDaftar = (username, password, nama, email, nomor_telp) => {
-    const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role) VALUES (?, ?, ?, ?, ?, 'pembeli')`;
+    const SQLQuery = `INSERT INTO pengguna (username, password, nama, email, nomor_telp, role, status) VALUES (?, ?, ?, ?, ?, 'pembeli', 'pending')`;
     return dbPool.query(SQLQuery, [username, password, nama, email, nomor_telp])
 }
+
+
+const getPendingUsers = () => {
+    const query = 'SELECT id, username, nama, email, nomor_telp, created_at FROM pengguna WHERE status = "pending" ';
+    return dbPool.query(query);
+};
+
+const updateUserStatus = (id, status) => {
+    const query = 'UPDATE pengguna SET status = ? WHERE id = ?';
+    return dbPool.query(query, [status, id]);
+};
 
 const validasiDaftar = (username, email) => {
     const SQLQuery = `SELECT * FROM pengguna WHERE username = ? OR email = ? LIMIT 1`;
@@ -626,5 +637,7 @@ module.exports = {
     deleteGajiKaryawan,
     tampilDataPenggunaKaryawan,
     ubahStatusGajiKaryawan,
-    getGajiKaryawanInfo
+    getGajiKaryawanInfo,
+    getPendingUsers,
+    updateUserStatus
  }
