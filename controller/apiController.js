@@ -2129,6 +2129,39 @@ const updateUserStatus = async (req, res) => {
     }
 };
 
+//fungsi untuk menampilkan data pengguna pembeli
+const adminTampilDataPenggunaPembeli = async (req, res) => {
+    try {
+        const [data] = await dbModel.getPenggunaPembeli();
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+const adminTampilKeranjang = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        // Mengambil data keranjang pembeli berdasarkan id_pengguna
+        const [data] = await dbModel.getPembeliTampilKeranjang(id);
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'Keranjang tidak ditemukan' });
+        }
+
+        // Mengembalikan data keranjang
+        return res.status(200).json({ pesan: 'Keranjang berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -2205,5 +2238,7 @@ module.exports = {
     adminDeleteGajiKaryawan,
     adminTampilDataPenggunaKaryawan,
     getPendingUsers,
-    updateUserStatus
+    updateUserStatus,
+    adminTampilDataPenggunaPembeli,
+    adminTampilKeranjang
 }

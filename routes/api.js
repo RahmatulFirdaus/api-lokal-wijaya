@@ -151,4 +151,8 @@ router.delete('/adminDeleteGajiKaryawan/:id', apiController.adminDeleteGajiKarya
 router.get('/admin/pending-users', apiController.getPendingUsers);
 router.patch('/admin/update-user-status', apiController.updateUserStatus);
 
+//khusus mengambil data ID pengguna dan namanya dengan role pembeli
+router.get('/adminTampilDataPenggunaPembeli', apiController.adminTampilDataPenggunaPembeli);
+router.get('/adminTampilKeranjang/:id', apiController.adminTampilKeranjang);
+
 module.exports = router;
