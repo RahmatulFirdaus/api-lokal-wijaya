@@ -2162,6 +2162,50 @@ const adminTampilKeranjang = async (req, res) => {
     }
 }
 
+// Fungsi untuk menambahkan produk ke keranjang dari admin
+const adminTambahKeranjang = async (req, res) => {
+    try {
+        const id = req.params.id; 
+        const { id_varian_produk, jumlah_order } = req.body;
+
+        console.log("ID Pengguna:", id);
+        console.log("ID Varian Produk:", id_varian_produk); 
+        console.log("Jumlah Order:", jumlah_order);
+
+        if (!id || !id_varian_produk || !jumlah_order) {
+            return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
+        }
+
+        // Ambil stok saat ini dari database
+        const [stokRows] = await dbModel.getStokVarianProduk(id_varian_produk);
+
+        console.log("Stok Rows:", stokRows);
+
+        if (stokRows.length === 0) {
+            return res.status(404).json({ pesan: 'Varian produk tidak ditemukan' });
+        }
+
+        
+
+        const stokSaatIni = stokRows[0].stok;
+
+        // Cek apakah stok cukup
+        if (stokSaatIni < jumlah_order) {
+            return res.status(400).json({ pesan: `Stok tidak mencukupi. Stok saat ini: ${stokSaatIni}` });
+        }
+
+        // Simpan ke keranjang dan kurangi stok
+        await dbModel.postPembeliTambahKeranjang(id, id_varian_produk, jumlah_order);
+        await dbModel.updateStokVarianProduk(id_varian_produk, jumlah_order);
+
+        return res.status(201).json({ pesan: 'Produk berhasil ditambahkan ke keranjang' });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
 
 module.exports = {
     login,
@@ -2240,5 +2284,6 @@ module.exports = {
     getPendingUsers,
     updateUserStatus,
     adminTampilDataPenggunaPembeli,
-    adminTampilKeranjang
+    adminTampilKeranjang,
+    adminTambahKeranjang
 }

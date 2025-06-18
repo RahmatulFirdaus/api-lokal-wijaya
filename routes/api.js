@@ -154,5 +154,5 @@ router.patch('/admin/update-user-status', apiController.updateUserStatus);
 //khusus mengambil data ID pengguna dan namanya dengan role pembeli
 router.get('/adminTampilDataPenggunaPembeli', apiController.adminTampilDataPenggunaPembeli);
 router.get('/adminTampilKeranjang/:id', apiController.adminTampilKeranjang);
-
+router.post('/adminTambahKeranjang/:id', apiController.adminTambahKeranjang);
 module.exports = router;
