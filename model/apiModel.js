@@ -1,6 +1,17 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const updateProdukDenganVideo = (id, nama_produk, deskripsi_produk, harga_produk, video_demo) => {
+    const SQLQuery = `UPDATE produk SET nama = ?, deskripsi = ?, harga = ?, video_demo = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nama_produk, deskripsi_produk, harga_produk, video_demo, id]);
+};
+
+const updateProdukDenganGambarDanVideo = (id, nama_produk, deskripsi_produk, harga_produk, link_gambar, video_demo) => {
+    const SQLQuery = `UPDATE produk SET nama = ?, deskripsi = ?, harga = ?, link_gambar = ?, video_demo = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [nama_produk, deskripsi_produk, harga_produk, link_gambar, video_demo, id]);
+};
+
+
 const tampilDataPenggunaKaryawan = () => {
     const SQLQuery = `SELECT pengguna.id, pengguna.nama 
 FROM pengguna 
@@ -316,7 +327,7 @@ const deleteAdminProduk = (id) => {
 const getAdminProduk = (id) => {
     const SQLQuery = `
         SELECT 
-            p.id, p.nama, p.deskripsi, p.harga, p.link_gambar, p.kategori,
+            p.id, p.nama, p.deskripsi, p.harga, p.link_gambar, p.kategori, p.video_demo,
             psd.harga_awal
         FROM produk p
         LEFT JOIN produk_sebelum_diskon psd ON p.id = psd.id_produk
@@ -355,11 +366,10 @@ const postAdminTambahVarianProduk = (id_produk, warna, ukuran, stok, gambar) => 
 };
 
 
-const postAdminTambahProduk = (nama_produk, deskripsi, harga_produk, link_gambar, kategori) => {
-    const SQLQuery = `INSERT INTO produk (nama, deskripsi, harga, link_gambar, kategori) VALUES (?, ?, ?, ?, ?)`;
-    return dbPool.query(SQLQuery, [nama_produk, deskripsi, harga_produk, link_gambar, kategori]);
+const postAdminTambahProduk = (nama_produk, deskripsi, harga_produk, link_gambar, kategori, video_demo = null) => {
+    const SQLQuery = `INSERT INTO produk (nama, deskripsi, harga, link_gambar, kategori, video_demo) VALUES (?, ?, ?, ?, ?, ?)`;
+    return dbPool.query(SQLQuery, [nama_produk, deskripsi, harga_produk, link_gambar, kategori, video_demo]);
 }
-
 const updateAdminStatusPengajuanIzinKaryawan = (id, status) => {
     const SQLQuery = `UPDATE karyawan_pengajuan_izin SET status = ? WHERE id = ?`;
     return dbPool.query(SQLQuery, [status, id]);
@@ -421,7 +431,7 @@ const getTampilProduk = () => {
 }
 
 const getTampilProdukDetail = (id) => {
-    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk_sebelum_diskon.harga_awal, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, produk.kategori AS kategori_produk, produk.created_at, varian_produk.id AS id_varian, varian_produk.warna AS warna_produk, varian_produk.ukuran AS ukuran_produk, varian_produk.stok AS stok_produk, varian_produk.link_gambar_varian FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id WHERE produk.id = ?`;
+    const SQLQuery = `SELECT produk.id AS id, produk.nama AS nama_produk, produk_sebelum_diskon.harga_awal, produk.deskripsi AS deskripsi_produk, produk.harga AS harga_produk, produk.link_gambar AS link_gambar_produk, produk.kategori AS kategori_produk, produk.video_demo, produk.created_at, varian_produk.id AS id_varian, varian_produk.warna AS warna_produk, varian_produk.ukuran AS ukuran_produk, varian_produk.stok AS stok_produk, varian_produk.link_gambar_varian FROM produk JOIN varian_produk ON produk.id = varian_produk.id_produk JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id WHERE produk.id = ?`;
     return dbPool.query(SQLQuery, [id]);
 }
 
@@ -639,5 +649,7 @@ module.exports = {
     ubahStatusGajiKaryawan,
     getGajiKaryawanInfo,
     getPendingUsers,
-    updateUserStatus
+    updateUserStatus,
+    updateProdukDenganGambarDanVideo,
+    updateProdukDenganVideo
  }
