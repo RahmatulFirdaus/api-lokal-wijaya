@@ -155,4 +155,9 @@ router.patch('/admin/update-user-status', apiController.updateUserStatus);
 router.get('/adminTampilDataPenggunaPembeli', apiController.adminTampilDataPenggunaPembeli);
 router.get('/adminTampilKeranjang/:id', apiController.adminTampilKeranjang);
 router.post('/adminTambahKeranjang/:id', apiController.adminTambahKeranjang);
+
+//khusus lokasi pengiriman
+router.post('/update-location', apiController.updateLocation);
+router.get('/get-location/:id', apiController.getLocation); //id diisi dengan id orderan
+router.get ('/getIDOrderan', apiController.getIDOrderan); //id diisi dengan id pengiriman
 module.exports = router;

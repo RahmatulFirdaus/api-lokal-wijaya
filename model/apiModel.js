@@ -1,6 +1,28 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getIdOrderanDikirim = () => {
+    const SQLQuery = `select orderan.id, pengiriman.status_pengiriman from orderan join pengiriman ON pengiriman.id_orderan = orderan.id where pengiriman.status_pengiriman = "dikirim"`;
+    return dbPool.query(SQLQuery);
+};
+
+const updateLocation = (id_orderan, lat, lng) => {
+    const SQLQuery = `INSERT INTO lokasi_pengiriman (id_orderan, lat, lng)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE lat = ?, lng = ?, updated_at = NOW()`;
+    return dbPool.query(SQLQuery, [id_orderan, lat, lng, lat, lng]);
+};
+
+const getLocation = (id_orderan) => {
+    const SQLQuery = `SELECT lat, lng FROM lokasi_pengiriman WHERE id_orderan = ?`;
+    return dbPool.query(SQLQuery, [id_orderan]);
+};
+
+const postIDOrderanLokasiPengiriman = (id_orderan) => {
+    const SQLQuery = `INSERT INTO lokasi_pengiriman (id_orderan) VALUES (?)`;
+    return dbPool.query(SQLQuery, [id_orderan]);
+};
+
 const getPenggunaPembeli = () => {
     const SQLQuery = `SELECT pengguna.id, pengguna.nama FROM pengguna where pengguna.role = "pembeli"`;
     return dbPool.query(SQLQuery);
@@ -657,5 +679,8 @@ module.exports = {
     updateUserStatus,
     updateProdukDenganGambarDanVideo,
     updateProdukDenganVideo,
-    getPenggunaPembeli
+    getPenggunaPembeli,
+    postIDOrderanLokasiPengiriman,
+    getLocation, updateLocation,
+    getIdOrderanDikirim
  }

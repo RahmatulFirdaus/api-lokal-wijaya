@@ -2206,6 +2206,56 @@ const adminTambahKeranjang = async (req, res) => {
     }
 };
 
+//fungsi untuk mengambil data lokasi
+const getLocation = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const [data] = await dbModel.getLocation(id);
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ pesan: 'Data tidak ditemukan' });
+    }
+
+    const lokasi = {
+      id_orderan: data[0].id_orderan,
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lng),
+    };
+
+    res.json(lokasi);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ pesan: 'Internal server error' });
+  }
+};
+
+
+//fungsi untuk mengupdate data lokasi
+const updateLocation = async (req, res) => {
+    const { id_orderan, lat, lng } = req.body;
+    try {
+        await dbModel.updateLocation(id_orderan, lat, lng);
+        return res.status(200).json({ pesan: 'Lokasi berhasil diupdate' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
+const getIDOrderan = async (req, res) => {
+    try {
+        const [data] = await dbModel.getIdOrderanDikirim();
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -2285,5 +2335,7 @@ module.exports = {
     updateUserStatus,
     adminTampilDataPenggunaPembeli,
     adminTampilKeranjang,
-    adminTambahKeranjang
+    adminTambahKeranjang,
+    getLocation, updateLocation,
+    getIDOrderan
 }
