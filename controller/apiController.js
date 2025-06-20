@@ -2256,6 +2256,48 @@ const getIDOrderan = async (req, res) => {
     }
 }
 
+const tampilSemuaProduk = async (req, res) => {
+    try {
+        const [data] = await dbModel.tampilSemuaProduk();
+
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+
+        const groupedProduk = {};
+
+        data.forEach(row => {
+            const key = row.nama_produk;
+
+            if (!groupedProduk[key]) {
+                groupedProduk[key] = {
+                    nama_produk: row.nama_produk,
+                    deskripsi: row.deskripsi,
+                    harga: row.harga,
+                    varian: []
+                };
+            }
+
+            groupedProduk[key].varian.push({
+                ukuran: row.ukuran,
+                warna: row.warna,
+                stok: row.stok
+            });
+        });
+
+        const hasil = Object.values(groupedProduk);
+
+        return res.status(200).json({
+            pesan: 'data berhasil diambil',
+            data: hasil
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+};
+
 
 module.exports = {
     login,
@@ -2337,5 +2379,6 @@ module.exports = {
     adminTampilKeranjang,
     adminTambahKeranjang,
     getLocation, updateLocation,
-    getIDOrderan
+    getIDOrderan,
+    tampilSemuaProduk
 }

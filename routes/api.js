@@ -21,6 +21,8 @@ router.get('/tampilProduk', apiController.tampilProduk);
 router.get('/tampilProdukDetail/:id', apiController.tampilProdukDetail); //id diisi dengan id produk
 router.get('/tampilUlasanProduk/:id', apiController.tampilUlasanProduk); //id diisi dengan id produk
 
+router.get('/tampilSemuaProduk', apiController.tampilSemuaProduk);
+
 
 //POST DEFAULT
 router.post('/daftar', apiController.daftar);

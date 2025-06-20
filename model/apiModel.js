@@ -1,6 +1,11 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const tampilSemuaProduk = () => {
+    const SQLQuery = `SELECT p.nama AS nama_produk, p.deskripsi, p.harga, v.ukuran, v.warna, v.stok FROM produk p JOIN varian_produk v ON p.id = v.id_produk;`;
+    return dbPool.query(SQLQuery);
+};
+
 const getIdOrderanDikirim = () => {
     const SQLQuery = `select orderan.id, pengiriman.status_pengiriman from orderan join pengiriman ON pengiriman.id_orderan = orderan.id where pengiriman.status_pengiriman = "dikirim"`;
     return dbPool.query(SQLQuery);
@@ -682,5 +687,5 @@ module.exports = {
     getPenggunaPembeli,
     postIDOrderanLokasiPengiriman,
     getLocation, updateLocation,
-    getIdOrderanDikirim
+    getIdOrderanDikirim, tampilSemuaProduk
  }
