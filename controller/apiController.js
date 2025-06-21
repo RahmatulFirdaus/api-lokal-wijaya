@@ -330,6 +330,7 @@ const pembeliFaktur = async (req, res) => {
             tanggal_faktur: moment(rows[0].tanggal_faktur).locale('id').format('DD MMMM YYYY, HH:mm'),
             id: rows[0].id,
             nama_pengguna: rows[0].nama_pengguna,
+            alamat_pengiriman: rows[0].alamat_pengiriman,
             items: rows.map(item => ({
                 nama_barang: item.nama_barang,
                 warna: item.warna,
