@@ -9,6 +9,8 @@ var apiRouter = require('./routes/api');
 
 var app = express();
 
+require('./cron/deleteKeranjangJob');
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

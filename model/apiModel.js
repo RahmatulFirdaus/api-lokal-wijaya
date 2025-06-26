@@ -1,6 +1,15 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getItemKadaluarsa = () => {
+    const SQL = `
+        SELECT id, id_varian_produk, jumlah_order
+        FROM item_order
+        WHERE id_orderan IS NULL AND created_at < (NOW() - INTERVAL 1 MINUTE)
+    `;
+    return dbPool.query(SQL);
+};
+
 const tampilSemuaProduk = () => {
     const SQLQuery = `SELECT p.nama AS nama_produk, p.deskripsi, p.harga, v.ukuran, v.warna, v.stok FROM produk p JOIN varian_produk v ON p.id = v.id_produk;`;
     return dbPool.query(SQLQuery);
@@ -687,5 +696,6 @@ module.exports = {
     getPenggunaPembeli,
     postIDOrderanLokasiPengiriman,
     getLocation, updateLocation,
-    getIdOrderanDikirim, tampilSemuaProduk
+    getIdOrderanDikirim, tampilSemuaProduk,
+    getItemKadaluarsa
  }

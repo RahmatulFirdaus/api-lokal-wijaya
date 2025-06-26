@@ -1426,6 +1426,28 @@ const pembeliDeleteKeranjang = async (req, res) => {
     }
 };
 
+//fungsi hapus otomatis keranjang pembeli
+const hapusItemKeranjangKadaluarsa = async () => {
+    try {
+        const [items] = await dbModel.getItemKadaluarsa();
+
+        for (const item of items) {
+            const { id, id_varian_produk, jumlah_order } = item;
+
+            // Tambah stok
+            await dbModel.kembalikanStokVarianProduk(id_varian_produk, jumlah_order);
+
+            // Hapus dari item_order
+            await dbModel.deletePembeliKeranjang(id);
+        }
+
+        console.log(`[✔] ${items.length} item kadaluarsa dihapus otomatis.`);
+    } catch (error) {
+        console.error('[✖] Gagal hapus item kadaluarsa:', error);
+    }
+};
+
+
 
 //fungsi untuk admin menambahkan metode pembayaran
 const adminTambahMetodePembayaran = async (req, res) => {
@@ -2381,5 +2403,5 @@ module.exports = {
     adminTambahKeranjang,
     getLocation, updateLocation,
     getIDOrderan,
-    tampilSemuaProduk
+    tampilSemuaProduk, hapusItemKeranjangKadaluarsa
 }
