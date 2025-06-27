@@ -1809,7 +1809,7 @@ const adminTambahAkun = async (req, res) => {
 
 
         // Simpan data ke database
-        await dbModel.postAdminDataAkun(username, password, nama_lengkap, email, nomor_telepon, email);
+        await dbModel.postAdminDataAkun(username, password, nama_lengkap, email, nomor_telepon, role);
         res.status(201).json({ pesan: 'Akun berhasil ditambahkan' });
     } catch (error) {
         console.error(error);
