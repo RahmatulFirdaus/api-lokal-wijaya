@@ -1584,6 +1584,7 @@ const adminTampilFakturOnline = async (req, res) => {
                     id: item.id,
                     nama_pengguna: item.nama_pengguna,
                     alamat_pengiriman : item.alamat_pengiriman,
+                    status: item.status,
                     items: []
                 });
             }
