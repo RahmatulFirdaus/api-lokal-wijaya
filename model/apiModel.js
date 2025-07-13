@@ -1,6 +1,16 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+const getJumlahVerifikasiAkun = () => {
+    const SQL = `
+        SELECT COUNT(*) AS jumlah_pending 
+FROM pengguna 
+WHERE status = 'pending';
+
+    `;
+    return dbPool.query(SQL);
+};
+
 const getItemKadaluarsa = () => {
     const SQL = `
         SELECT id, id_varian_produk, jumlah_order
@@ -697,5 +707,5 @@ module.exports = {
     postIDOrderanLokasiPengiriman,
     getLocation, updateLocation,
     getIdOrderanDikirim, tampilSemuaProduk,
-    getItemKadaluarsa
+    getItemKadaluarsa, getJumlahVerifikasiAkun
  }

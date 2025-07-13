@@ -162,4 +162,8 @@ router.post('/adminTambahKeranjang/:id', apiController.adminTambahKeranjang);
 router.post('/update-location', apiController.updateLocation);
 router.get('/get-location/:id', apiController.getLocation); //id diisi dengan id orderan
 router.get ('/getIDOrderan', apiController.getIDOrderan); //id diisi dengan id pengiriman
+
+//khusus untuk mengetahui jumlah verifikasi akun
+router.get('/adminTampilJumlahVerifikasiAkun', apiController.adminTampilJumlahVerifikasiAkun);
+
 module.exports = router;

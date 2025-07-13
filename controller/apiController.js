@@ -2322,6 +2322,20 @@ const tampilSemuaProduk = async (req, res) => {
     }
 };
 
+//fungsi untuk menghitung jumlah verifikasi akun
+const adminTampilJumlahVerifikasiAkun = async (req, res) => {
+    try {
+        const [data] = await dbModel.getJumlahVerifikasiAkun();
+        if (data.length === 0) {
+            return res.status(404).json({ pesan: 'data tidak ditemukan' });
+        }
+        return res.status(200).json({ pesan: 'data berhasil diambil', data: data });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ pesan: 'Internal server error' });
+    }
+}
+
 
 module.exports = {
     login,
@@ -2404,5 +2418,6 @@ module.exports = {
     adminTambahKeranjang,
     getLocation, updateLocation,
     getIDOrderan,
-    tampilSemuaProduk, hapusItemKeranjangKadaluarsa
+    tampilSemuaProduk, hapusItemKeranjangKadaluarsa,
+    adminTampilJumlahVerifikasiAkun
 }
