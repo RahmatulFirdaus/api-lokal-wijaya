@@ -1620,7 +1620,7 @@ const adminTampilUlasanProduk = async (req, res) => {
         }
         return res.status(200).json({ pesan: 'Data ulasan produk berhasil diambil', data: data.map((item) => ({
             ...item,
-            tanggal_komentar: timeMoment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
+            tanggal_komentar: timeMoment(item.tanggal_komentar).tz('Asia/Makassar').format('YYYY-MM-DD HH:mm:ss'),
         })) });
     } catch (error) {
         console.error(error);

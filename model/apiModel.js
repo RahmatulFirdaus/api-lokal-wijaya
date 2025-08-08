@@ -26,7 +26,7 @@ const tampilSemuaProduk = () => {
 };
 
 const getIdOrderanDikirim = () => {
-    const SQLQuery = `select orderan.id, pengiriman.status_pengiriman from orderan join pengiriman ON pengiriman.id_orderan = orderan.id where pengiriman.status_pengiriman = "dikirim"`;
+    const SQLQuery = `select orderan.id, pengiriman.status_pengiriman from orderan join pengiriman ON pengiriman.id_orderan = orderan.id where pengiriman.status_pengiriman = "dikirim" where ordrean.status = "berhasil";`;
     return dbPool.query(SQLQuery);
 };
 
@@ -222,7 +222,7 @@ const getAdminTampilPengirimanDetail = (id) => {
 }
 
 const getAdminTampilPengiriman = () => {
-    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk;`;
+    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.status = 'berhasil';`;
     return dbPool.query(SQLQuery);
 }
 
