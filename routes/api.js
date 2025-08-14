@@ -120,7 +120,7 @@ router.post('/adminTambahHargaProdukEco', apiController.adminTambahHargaProdukEc
 
 //UPDATE ADMIN
 router.patch('/adminUpdateKaryawanIzin/:id', apiController.adminUpdateKaryawanIzin);
-router.put('/adminUpdateProduk/:id', upload.array('files', 10), apiController.adminUpdateProduk);
+router.patch('/adminUpdateProduk/:id', upload.array('files', 10), apiController.adminUpdateProduk);
 router.patch('/adminUpdateMetodePembayaran/:id', apiController.adminUpdateMetodePembayaran); //id diisi dengan id metode pembayaran
 router.patch('/adminUpdateVerifikasiPembayaran/:id', apiController.adminUpdateVerifikasiPembayaran); //id diisi dengan id verifikasi pembayaran
 router.patch('/adminUpdatePengiriman/:id', apiController.adminUpdatePengiriman); //id diisi dengan id pengiriman
@@ -134,6 +134,7 @@ router.delete('/adminDeleteProduk/:id', apiController.adminDeleteProduk); //id d
 router.delete('/adminDeleteVarianProduk/:id', apiController.adminDeleteVarianProduk); //id diisi dengan id varian produk
 router.delete('/adminDeleteMetodePembayaran/:id', apiController.adminDeleteMetodePembayaran); //id diisi dengan id metode pembayaran
 router.delete('/adminDeleteAkun/:id', apiController.adminDeleteAkun); //id diisi dengan id akun
+
 
 
 //Laporan Admin External

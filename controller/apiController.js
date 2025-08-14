@@ -941,45 +941,41 @@ const adminUpdateProduk = async (req, res) => {
     let currentVarianImageIndex = varianImageStartIndex;
 
     for (const v of parsedVarian) {
-      const { id_varian, warna, ukuran, stok, is_new, has_new_image } = v;
+  const { id_varian, warna, ukuran, stok, is_new, has_new_image, action } = v;
 
-      console.log(`\n🔄 Processing Varian: ${warna} (ID: ${id_varian})`);
-      console.log(`   - is_new: ${is_new}`);
-      console.log(`   - has_new_image: ${has_new_image}`);
-      console.log(`   - stok: ${stok}`);
-      console.log(`   - ukuran: ${ukuran}`);
+  console.log(`\n🔄 Processing Varian: ${warna} - Ukuran: ${ukuran}`);
+  console.log(`   - id_varian: ${id_varian}`);
+  console.log(`   - is_new: ${is_new}`);
+  console.log(`   - action: ${action}`);
+  console.log(`   - has_new_image: ${has_new_image}`);
 
-      // Validasi ID untuk varian existing
-      if (!is_new && (!id_varian || id_varian === null || id_varian === undefined)) {
-        console.error(`❌ ID varian tidak valid untuk varian existing: ${warna}`);
-        continue;
-      }
+  let filename = null;
+  
+  if (has_new_image && currentVarianImageIndex < imageFiles.length) { 
+    filename = imageFiles[currentVarianImageIndex].filename;
+    currentVarianImageIndex++;
+  }
 
-      let filename = null;
-      
-      // Tentukan filename hanya jika has_new_image = true dan masih ada gambar tersedia
-      if (has_new_image && currentVarianImageIndex < imageFiles.length) {
-        filename = imageFiles[currentVarianImageIndex].filename;
-        currentVarianImageIndex++;
-        console.log(`📸 Menggunakan gambar: ${filename} untuk varian ${warna}`);
-      }
-
-      if (id_varian && !is_new) {
-        // Update varian existing
-        if (has_new_image && filename) {
-          await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok, filename);
-          console.log(`🟡 Update Varian ID: ${id_varian} dengan gambar baru: ${filename}`);
-        } else {
-          await dbModel.updateVarianProdukTanpaGambar(id_varian, warna, ukuran, stok);
-          console.log(`🟡 Update Varian ID: ${id_varian} tanpa mengubah gambar`);
-        }
-      } else if (is_new) {
-        // Tambah varian baru
-        const finalFilename = filename || '';
-        await dbModel.insertVarianBaru(id, warna, ukuran, stok, finalFilename);
-        console.log(`🟢 Tambah Varian Baru | Warna: ${warna} | Ukuran: ${ukuran} | Stok: ${stok} | Gambar: ${finalFilename || 'TIDAK ADA'}`);
-      }
+  // ✅ PERBAIKI LOGIKA BERDASARKAN ACTION
+  if (action === 'insert' || is_new) {
+    // Tambah ukuran baru
+    const finalFilename = filename || '';
+    await dbModel.insertVarianBaru(id, warna, ukuran, stok, finalFilename);
+    console.log(`🟢 INSERT Varian Baru | Warna: ${warna} | Ukuran: ${ukuran}`);
+    
+  } else if (action === 'update' && id_varian) {
+    // Update ukuran existing
+    if (has_new_image && filename) {
+      await dbModel.updateVarianProduk(id_varian, warna, ukuran, stok, filename);
+    } else {
+      await dbModel.updateVarianProdukTanpaGambar(id_varian, warna, ukuran, stok);
     }
+    console.log(`🟡 UPDATE Varian ID: ${id_varian} | Ukuran: ${ukuran}`);
+    
+  } else {
+    console.error(`❌ Action tidak valid: ${action} untuk varian ID: ${id_varian}`);
+  }
+}
 
     // Update harga awal jika ada
     if (harga_awal) {

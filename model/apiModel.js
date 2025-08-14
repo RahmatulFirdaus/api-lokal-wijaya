@@ -26,7 +26,7 @@ const tampilSemuaProduk = () => {
 };
 
 const getIdOrderanDikirim = () => {
-    const SQLQuery = `select orderan.id, pengiriman.status_pengiriman from orderan join pengiriman ON pengiriman.id_orderan = orderan.id where pengiriman.status_pengiriman = "dikirim" where ordrean.status = "berhasil";`;
+    const SQLQuery = `SELECT orderan.id, pengiriman.status_pengiriman FROM orderan JOIN pengiriman ON pengiriman.id_orderan = orderan.id WHERE pengiriman.status_pengiriman = 'dikirim' AND orderan.status = 'berhasil';`;
     return dbPool.query(SQLQuery);
 };
 
