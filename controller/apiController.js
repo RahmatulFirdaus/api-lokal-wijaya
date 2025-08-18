@@ -1,6 +1,9 @@
 const dbModel = require('../model/apiModel');
 const timeMoment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const nodemailer = require("nodemailer");
 require('dotenv').config();
 const moment = require('moment'); 
 require('moment/locale/id'); 
@@ -2332,9 +2335,85 @@ const adminTampilJumlahVerifikasiAkun = async (req, res) => {
     }
 }
 
+//REVISI
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ pesan: "Email wajib diisi" });
+
+        const [user] = await dbModel.getUserByEmail(email);
+        if (user.length === 0) {
+            return res.status(404).json({ pesan: "Email tidak ditemukan" });
+        }
+
+        // generate OTP 6 digit
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // simpan OTP ke tabel reset password
+        await dbModel.saveResetOtp(email, otp);
+
+        // kirim OTP ke email user
+        await sendOtpEmail(email, otp);
+
+        return res.status(200).json({ pesan: "Kode reset password sudah dikirim ke email" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+// Step 2: Reset password
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, passwordBaru } = req.body;
+
+        const [data] = await dbModel.getOtp(email, otp);
+        if (data.length === 0) {
+            return res.status(400).json({ pesan: "Kode OTP salah atau sudah kadaluarsa" });
+        }
+
+        // simpan password baru langsung (plaintext)
+        await dbModel.updatePassword(email, passwordBaru);
+
+        // hapus otp setelah dipakai
+        await dbModel.deleteOtp(email);
+
+        return res.status(200).json({ pesan: "Password berhasil direset" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: "rahmatulfirdaus30@gmail.com",
+        pass: "rolv eazs fjvm talm", // gunakan App Password Gmail
+    },
+});
+
+const sendOtpEmail = (to, otp) => {
+    const mailOptions = {
+        from: '"Wijaya Store" <rahmatulfirdaus30@gmail.com>',
+        to,
+        subject: "Kode Reset Password",
+        html: `
+            <h3>Kode Reset Password Anda</h3>
+            <p>Gunakan kode berikut untuk reset password:</p>
+            <h2>${otp}</h2>
+            <p>Kode ini berlaku 5 menit.</p>
+        `,
+    };
+    return transporter.sendMail(mailOptions);
+};
+
+
 
 module.exports = {
     login,
+    resetPassword,
+    forgotPassword,
     daftar, 
     pembeliTambahKeranjang,
     pembeliOrderProduk, 

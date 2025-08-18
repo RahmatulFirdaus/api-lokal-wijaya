@@ -167,4 +167,9 @@ router.get ('/getIDOrderan', apiController.getIDOrderan); //id diisi dengan id p
 //khusus untuk mengetahui jumlah verifikasi akun
 router.get('/adminTampilJumlahVerifikasiAkun', apiController.adminTampilJumlahVerifikasiAkun);
 
+
+//REVISI
+router.post('/forgot-password', apiController.forgotPassword);
+router.post('/reset-password', apiController.resetPassword);
+
 module.exports = router;

@@ -599,9 +599,72 @@ const validasiDaftar = (username, email) => {
     return dbPool.query(SQLQuery, [username, email]);
 }
 
+//REVISI
+// Cari user by email
+const getUserByEmail = (email) => {
+    const SQLQuery = `SELECT id, username, email FROM pengguna WHERE email = ?`;
+    return dbPool.query(SQLQuery, [email]);
+};
+
+// Simpan token reset
+const saveResetToken = (email, token) => {
+    const SQLQuery = `INSERT INTO password_resets (email, token) VALUES (?, ?)`;
+    return dbPool.query(SQLQuery, [email, token]);
+};
+
+// Cari token reset
+const getResetByToken = (token) => {
+    const SQLQuery = `SELECT * FROM password_resets WHERE token = ?`;
+    return dbPool.query(SQLQuery, [token]);
+};
+
+// Update password user
+const updatePasswordByEmail = (email, newPassword) => {
+    const SQLQuery = `UPDATE pengguna SET password = ? WHERE email = ?`;
+    return dbPool.query(SQLQuery, [newPassword, email]);
+};
+
+// Hapus token setelah digunakan
+const deleteResetToken = (token) => {
+    const SQLQuery = `DELETE FROM password_resets WHERE token = ?`;
+    return dbPool.query(SQLQuery, [token]);
+};
+
+const saveResetOtp = (email, otp) => {
+    const SQL = `INSERT INTO password_resets (email, otp, created_at) VALUES (?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE otp=?, created_at=NOW()`;
+    return dbPool.query(SQL, [email, otp, otp]);
+};
+
+const getOtp = (email, otp) => {
+    const SQL = `SELECT * FROM password_resets WHERE email=? AND otp=? 
+                 AND created_at >= NOW() - INTERVAL 5 MINUTE`;
+    return dbPool.query(SQL, [email, otp]);
+};
+
+const deleteOtp = (email) => {
+    const SQL = `DELETE FROM password_resets WHERE email=?`;
+    return dbPool.query(SQL, [email]);
+};
+
+const updatePassword = (email, newPassword) => {
+    const SQL = `UPDATE pengguna SET password=? WHERE email=?`;
+    return dbPool.query(SQL, [newPassword, email]);
+};
 
 module.exports = { 
     getUsernameLogin,
+    saveResetOtp,
+    getOtp,
+    deleteOtp,
+    updatePassword,
+    getUserByEmail,
+    saveResetToken,
+    getResetByToken,
+    updatePasswordByEmail,
+    deleteResetToken,
+    getPendingUsers,
+    updateUserStatus,
     postDaftar,
     validasiDaftar, 
     postPembeliTambahKeranjang,
