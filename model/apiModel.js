@@ -1,6 +1,182 @@
 const dbPool = require('../config/database');
 const { post, get } = require('../routes/api');
 
+// Penjualan Online per bulan (omzet & keuntungan)
+const getMonthlyOnline = () => {
+  const SQL = `
+    SELECT 
+      DATE_FORMAT(orderan.tanggal_order, '%Y-%m') AS ym,
+      SUM(COALESCE(item_order.harga_khusus, produk.harga) * item_order.jumlah_order) AS omzet_online,
+      SUM(
+        CASE WHEN produk_eco.status='sudah'
+             THEN (COALESCE(item_order.harga_khusus, produk.harga) - produk_eco.harga_asli) * item_order.jumlah_order
+             ELSE 0 END
+      ) AS profit_online
+    FROM orderan
+    JOIN item_order ON item_order.id_orderan = orderan.id
+    JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id
+    JOIN produk ON varian_produk.id_produk = produk.id
+    LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id
+    GROUP BY ym
+    ORDER BY ym ASC
+  `;
+  return dbPool.query(SQL);
+};
+
+// Penjualan Offline per bulan (omzet & keuntungan)
+const getMonthlyOffline = () => {
+  const SQL = `
+    SELECT 
+      DATE_FORMAT(kpo.tanggal, '%Y-%m') AS ym,
+      SUM(produk.harga) AS omzet_offline,
+      SUM(CASE WHEN pe.status='sudah' THEN (produk.harga - pe.harga_asli) ELSE 0 END) AS profit_offline
+    FROM karyawan_penjualan_offline kpo
+    JOIN varian_produk vp ON kpo.id_varian_produk = vp.id
+    JOIN produk ON vp.id_produk = produk.id
+    LEFT JOIN produk_eco pe ON pe.id_produk = produk.id
+    GROUP BY ym
+    ORDER BY ym ASC
+  `;
+  return dbPool.query(SQL);
+};
+
+// Ringkasan hari ini
+const getTodaySummary = () => {
+  const SQL = `
+    SELECT 'online' AS jenis,
+      SUM(COALESCE(io.harga_khusus, p.harga) * io.jumlah_order) AS omzet,
+      SUM(CASE WHEN pe.status='sudah' THEN (COALESCE(io.harga_khusus, p.harga) - pe.harga_asli) * io.jumlah_order ELSE 0 END) AS profit
+    FROM orderan o
+      JOIN item_order io ON io.id_orderan=o.id
+      JOIN varian_produk vp ON io.id_varian_produk=vp.id
+      JOIN produk p ON vp.id_produk=p.id
+      LEFT JOIN produk_eco pe ON pe.id_produk=p.id
+    WHERE DATE(o.tanggal_order)=CURDATE()
+    UNION ALL
+    SELECT 'offline',
+      SUM(p.harga) AS omzet,
+      SUM(CASE WHEN pe.status='sudah' THEN (p.harga - pe.harga_asli) ELSE 0 END) AS profit
+    FROM karyawan_penjualan_offline kpo
+      JOIN varian_produk vp ON kpo.id_varian_produk=vp.id
+      JOIN produk p ON vp.id_produk=p.id
+      LEFT JOIN produk_eco pe ON pe.id_produk=p.id
+    WHERE DATE(kpo.tanggal)=CURDATE()
+  `;
+  return dbPool.query(SQL);
+};
+
+// Ringkasan bulan ini
+const getMonthSummary = () => {
+  const SQL = `
+    -- Online
+    SELECT 'online' AS jenis,
+      SUM(COALESCE(io.harga_khusus, p.harga) * io.jumlah_order) AS omzet,
+      SUM(
+        CASE 
+          WHEN pe.status = 'sudah' 
+          THEN (COALESCE(io.harga_khusus, p.harga) - pe.harga_asli) * io.jumlah_order 
+          ELSE 0 
+        END
+      ) AS profit
+    FROM orderan o
+      JOIN item_order io ON io.id_orderan = o.id
+      JOIN varian_produk vp ON io.id_varian_produk = vp.id
+      JOIN produk p ON vp.id_produk = p.id
+      LEFT JOIN produk_eco pe ON pe.id_produk = p.id
+    WHERE DATE_FORMAT(o.tanggal_order, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+
+    UNION ALL
+
+    -- Offline
+    SELECT 'offline' AS jenis,
+      SUM(p.harga) AS omzet,
+      SUM(
+        CASE 
+          WHEN pe.status = 'sudah' 
+          THEN (p.harga - pe.harga_asli) 
+          ELSE 0 
+        END
+      ) AS profit
+    FROM karyawan_penjualan_offline kpo
+      JOIN varian_produk vp ON kpo.id_varian_produk = vp.id
+      JOIN produk p ON vp.id_produk = p.id
+      LEFT JOIN produk_eco pe ON pe.id_produk = p.id
+    WHERE DATE_FORMAT(kpo.tanggal, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+  `;
+  return dbPool.query(SQL);
+};
+
+
+// const getAdminTampilPenjualanOnlineOffline = () => {
+//     const SQLQuery = `
+//         SELECT 
+//             YEAR(orderan.tanggal_order) AS tahun,
+//             MONTH(orderan.tanggal_order) AS bulan,
+//             'online' AS metode,
+//             SUM(COALESCE(item_order.harga_khusus, produk.harga) * item_order.jumlah_order) AS total_penjualan
+//         FROM orderan
+//         JOIN item_order ON item_order.id_orderan = orderan.id
+//         JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id
+//         JOIN produk ON varian_produk.id_produk = produk.id
+//         WHERE YEAR(orderan.tanggal_order) BETWEEN YEAR(CURDATE()) - 3 AND YEAR(CURDATE()) + 2
+//         GROUP BY tahun, bulan
+
+//         UNION ALL
+
+//         SELECT 
+//             YEAR(transaksi_offline.tanggal_transaksi) AS tahun,
+//             MONTH(transaksi_offline.tanggal_transaksi) AS bulan,
+//             'offline' AS metode,
+//             SUM(transaksi_offline.total_harga) AS total_penjualan
+//         FROM transaksi_offline
+//         WHERE YEAR(transaksi_offline.tanggal_transaksi) BETWEEN YEAR(CURDATE()) - 3 AND YEAR(CURDATE()) + 2
+//         GROUP BY tahun, bulan
+
+//         ORDER BY tahun ASC, bulan ASC;
+//     `;
+//     return dbPool.query(SQLQuery);
+// };
+
+const getGajiKaryawanHarian = () => {
+    const SQLQuery = `
+        SELECT 
+            ka.id_pengguna,
+            p.nama,
+            gk.gaji,
+            DATE(ka.tanggal) AS tanggal,
+            (gk.gaji / 30) AS gaji_harian
+        FROM karyawan_absensi ka
+        JOIN pengguna p ON p.id = ka.id_pengguna
+        JOIN gaji_karyawan gk ON gk.id_pengguna = ka.id_pengguna
+        WHERE ka.absen_masuk = 'hadir'
+        ORDER BY tanggal ASC
+    `;
+    return dbPool.query(SQLQuery);
+};
+
+const getAdminTampilBiayaOperasional = () => {
+    const SQLQuery = `SELECT * FROM biaya_operasional ORDER BY created_at DESC`;
+    return dbPool.query(SQLQuery);
+};
+
+// POST tambah biaya operasional
+const postAdminTambahBiayaOperasional = (biaya_toko, bensin, bulan) => {
+    const SQLQuery = `INSERT INTO biaya_operasional (biaya_toko, bensin, bulan) VALUES (?, ?, ?)`;
+    return dbPool.query(SQLQuery, [biaya_toko, bensin, bulan]);
+};
+
+// PATCH update biaya operasional
+const updateAdminBiayaOperasional = (id, biaya_toko, bensin, bulan) => {
+    const SQLQuery = `UPDATE biaya_operasional SET biaya_toko = ?, bensin = ?, bulan = ? WHERE id = ?`;
+    return dbPool.query(SQLQuery, [biaya_toko, bensin, bulan, id]);
+};
+
+// DELETE biaya operasional
+const deleteAdminBiayaOperasional = (id) => {
+    const SQLQuery = `DELETE FROM biaya_operasional WHERE id = ?`;
+    return dbPool.query(SQLQuery, [id]);
+};
+
 const getJumlahVerifikasiAkun = () => {
     const SQL = `
         SELECT COUNT(*) AS jumlah_pending 
@@ -217,9 +393,29 @@ const updateAdminStatusPengiriman = (id, status) => {
 }
 
 const getAdminTampilPengirimanDetail = (id) => {
-    const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE pengiriman.id = ?;`;
+    const SQLQuery = `
+        SELECT 
+            pengiriman.id AS id_pengiriman, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga_satuan, 
+            orderan.total_harga, 
+            pengguna.nama as nama_pengguna, 
+            pengiriman.alamat_pengiriman, 
+            pengiriman.status_pengiriman, 
+            pengiriman.tanggal_pengiriman, 
+            produk.nama, 
+            varian_produk.warna, 
+            varian_produk.ukuran, 
+            item_order.jumlah_order 
+        FROM pengiriman 
+        JOIN orderan ON pengiriman.id_orderan = orderan.id 
+        JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan 
+        JOIN pengguna ON pengguna.id = item_order.id_pengguna 
+        JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk 
+        JOIN produk ON produk.id = varian_produk.id_produk 
+        WHERE pengiriman.id = ?;
+    `;
     return dbPool.query(SQLQuery, [id]);
-}
+};
 
 const getAdminTampilPengiriman = () => {
     const SQLQuery = `SELECT pengiriman.id AS id_pengiriman, produk.harga as harga_satuan, orderan.total_harga, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, pengiriman.status_pengiriman, pengiriman.tanggal_pengiriman, produk.nama, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order FROM pengiriman JOIN orderan ON pengiriman.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = pengiriman.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.status = 'berhasil';`;
@@ -258,8 +454,39 @@ const updateStokVarianProduk = (id_varian_produk, jumlah_order) => {
     return dbPool.query(SQLQuery, [jumlah_order, id_varian_produk]);
 };
 
-const getAdminTampilProdukPerluRestok = () => {
-    const SQLQuery = `SELECT produk.nama AS nama_produk, varian_produk.link_gambar_varian, varian_produk.warna, varian_produk.ukuran, varian_produk.stok FROM varian_produk INNER JOIN produk ON varian_produk.id_produk = produk.id WHERE varian_produk.stok < 1 ORDER BY produk.nama ASC;`;
+const getKategoriProduk = () => {
+    const SQLQuery = `
+        SELECT DISTINCT kategori 
+        FROM produk 
+        WHERE id IN (
+            SELECT DISTINCT id_produk 
+            FROM varian_produk 
+            WHERE stok < 1
+        )
+        ORDER BY kategori ASC`;
+    return dbPool.query(SQLQuery);
+}
+
+const getAdminTampilProdukPerluRestok = (kategori = null) => {
+    let SQLQuery = `
+        SELECT 
+            produk.nama AS nama_produk, 
+            produk.kategori,
+            varian_produk.link_gambar_varian, 
+            varian_produk.warna, 
+            varian_produk.ukuran, 
+            varian_produk.stok 
+        FROM varian_produk 
+        INNER JOIN produk ON varian_produk.id_produk = produk.id 
+        WHERE varian_produk.stok < 1`;
+    
+    // Tambahkan filter kategori jika ada
+    if (kategori && kategori !== 'all') {
+        SQLQuery += ` AND produk.kategori = '${kategori}'`;
+    }
+    
+    SQLQuery += ` ORDER BY varian_produk.stok ASC, produk.nama ASC`;
+    
     return dbPool.query(SQLQuery);
 }
 
@@ -269,9 +496,30 @@ const getAdminTampilUlasanProduk = (id) => {
 }
 
 const getAdminTampilFakturOnline = () => {
-    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, orderan.status, pengguna.nama as nama_pengguna, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran, pengiriman.alamat_pengiriman FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id JOIN pengiriman ON orderan.id = pengiriman.id_orderan;`;
+    const SQLQuery = `
+        SELECT 
+            faktur.nomor_faktur, 
+            faktur.tanggal_faktur, 
+            orderan.id, 
+            orderan.status, 
+            pengguna.nama as nama_pengguna, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga,
+            item_order.jumlah_order, 
+            produk.nama as nama_barang, 
+            varian_produk.warna, 
+            varian_produk.ukuran, 
+            pengiriman.alamat_pengiriman 
+        FROM faktur 
+        JOIN orderan ON faktur.id_orderan = orderan.id 
+        JOIN item_order ON item_order.id_orderan = orderan.id 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON varian_produk.id_produk = produk.id 
+        JOIN pengguna ON item_order.id_pengguna = pengguna.id 
+        JOIN pengiriman ON orderan.id = pengiriman.id_orderan;
+    `;
     return dbPool.query(SQLQuery);
-}
+};
+
 
 const updateAdminVerifikasiPembayaran = (id, status, catatan_admin) => {
     const SQLQuery = `UPDATE orderan SET status = ?, catatan_admin = ? WHERE id = ?`;
@@ -304,9 +552,26 @@ const deletePembeliKeranjang = (id) => {
 }
 
 const getPembeliTampilKeranjang = (id) => {
-    const SQLQuery = `SELECT item_order.id AS id_item_order,varian_produk.id as id_varian_produk, varian_produk.link_gambar_varian, produk_sebelum_diskon.harga_awal, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga AS harga_satuan FROM item_order JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id WHERE item_order.id_pengguna = ? AND item_order.id_orderan IS NULL;`;
+    const SQLQuery = `
+        SELECT 
+            item_order.id AS id_item_order,
+            varian_produk.id as id_varian_produk, 
+            varian_produk.link_gambar_varian, 
+            produk_sebelum_diskon.harga_awal, 
+            produk.nama AS nama_produk, 
+            varian_produk.warna, 
+            varian_produk.ukuran, 
+            item_order.jumlah_order AS jumlah, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga_satuan,
+            item_order.harga_khusus
+        FROM item_order 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON varian_produk.id_produk = produk.id 
+        JOIN produk_sebelum_diskon ON produk_sebelum_diskon.id_produk = produk.id 
+        WHERE item_order.id_pengguna = ? AND item_order.id_orderan IS NULL;
+    `;
     return dbPool.query(SQLQuery, [id]);
-}
+};
 
 const getAdminMetodePembayaran = () => {
     const SQLQuery = `SELECT * FROM metode_pembayaran`;
@@ -319,10 +584,40 @@ const getAdminHargaAsli = () => {
 }
 
 const getAdminLaporanTotalHargaOnline = () => {
-    const SQLQuery = `SELECT DATE(orderan.tanggal_order) AS tanggal, SUM(produk.harga * item_order.jumlah_order) AS total_harga, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk_eco.harga_asli * item_order.jumlah_order ELSE 0 END) AS total_harga_asli, SUM(CASE WHEN produk_eco.status = 'sudah' THEN (produk.harga - produk_eco.harga_asli) * item_order.jumlah_order ELSE 0 END) AS total_keuntungan FROM orderan JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id GROUP BY DATE(orderan.tanggal_order) ORDER BY tanggal ASC;
-`;
+    const SQLQuery = `
+        SELECT 
+            DATE(orderan.tanggal_order) AS tanggal, 
+            -- Total harga (pakai harga_khusus jika ada)
+            SUM(COALESCE(item_order.harga_khusus, produk.harga) * item_order.jumlah_order) AS total_harga, 
+
+            -- Total harga asli (hanya untuk produk_eco yang sudah diset)
+            SUM(
+                CASE 
+                    WHEN produk_eco.status = 'sudah' 
+                    THEN produk_eco.harga_asli * item_order.jumlah_order 
+                    ELSE 0 
+                END
+            ) AS total_harga_asli, 
+
+            -- Total keuntungan (harga jual - harga asli), tetap perhitungkan harga_khusus
+            SUM(
+                CASE 
+                    WHEN produk_eco.status = 'sudah' 
+                    THEN (COALESCE(item_order.harga_khusus, produk.harga) - produk_eco.harga_asli) * item_order.jumlah_order 
+                    ELSE 0 
+                END
+            ) AS total_keuntungan
+        FROM orderan 
+        JOIN item_order ON item_order.id_orderan = orderan.id 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON varian_produk.id_produk = produk.id 
+        LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id 
+        GROUP BY DATE(orderan.tanggal_order) 
+        ORDER BY tanggal ASC;
+    `;
     return dbPool.query(SQLQuery);
-}
+};
+
 
 const getAdminLaporanTotalHargaOffline = () => {
     const SQLQuery = `SELECT DATE(karyawan_penjualan_offline.tanggal) AS tanggal, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk.harga ELSE produk.harga END) AS total_penjualan, SUM(CASE WHEN produk_eco.status = 'sudah' THEN produk_eco.harga_asli ELSE 0 END) AS total_harga_asli, SUM(CASE WHEN produk_eco.status = 'sudah' THEN (produk.harga - produk_eco.harga_asli) ELSE 0 END) AS total_keuntungan FROM karyawan_penjualan_offline JOIN varian_produk ON karyawan_penjualan_offline.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id LEFT JOIN produk_eco ON produk_eco.id_produk = produk.id GROUP BY DATE(karyawan_penjualan_offline.tanggal) ORDER BY tanggal ASC;`;
@@ -341,9 +636,29 @@ const getAdminTampilPenjualanHarianOffline = () => {
 }
 
 const getAdminTampilPenjualanHarianOnline = () => {
-    const SQLQuery = `SELECT orderan.id as id_orderan, item_order.jumlah_order, pengguna.nama AS nama_pengguna, orderan.tanggal_order, orderan.total_harga, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, produk.harga AS harga_satuan, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk ORDER BY orderan.tanggal_order DESC;`;
+    const SQLQuery = `
+        SELECT 
+            orderan.id as id_orderan, 
+            item_order.jumlah_order, 
+            pengguna.nama AS nama_pengguna, 
+            orderan.tanggal_order, 
+            orderan.total_harga, 
+            produk.nama AS nama_produk, 
+            varian_produk.warna, 
+            varian_produk.ukuran, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga_satuan,
+            (COALESCE(item_order.harga_khusus, produk.harga) * item_order.jumlah_order) AS subtotal,
+            varian_produk.link_gambar_varian
+        FROM item_order 
+        JOIN orderan ON orderan.id = item_order.id_orderan 
+        JOIN pengguna ON pengguna.id = item_order.id_pengguna 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON produk.id = varian_produk.id_produk 
+        ORDER BY orderan.tanggal_order DESC;
+    `;
     return dbPool.query(SQLQuery);
-}
+};
+
 
 const updateAdminUbahProdukEco = (id_produk, harga_asli) => {
     const SQLQuery = `UPDATE produk_eco SET harga_asli = ?, status = 'sudah' WHERE id_produk = ?`;
@@ -361,9 +676,28 @@ const getAdminTampilProdukEco = () => {
 }
 
 const getAdminTampilHasilTransaksiOnline = () => {
-    const SQLQuery = `SELECT orderan.id as id_orderan, item_order.jumlah_order, pengguna.nama AS nama_pengguna, orderan.status, orderan.tanggal_order, orderan.total_harga, produk.nama AS nama_produk, produk.harga AS harga_satuan, varian_produk.warna, varian_produk.ukuran FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN pengguna ON pengguna.id = item_order.id_pengguna JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk;`;
+    const SQLQuery = `
+        SELECT 
+            orderan.id as id_orderan, 
+            item_order.jumlah_order, 
+            pengguna.nama AS nama_pengguna, 
+            orderan.status, 
+            orderan.tanggal_order, 
+            orderan.total_harga, 
+            produk.nama AS nama_produk, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga_satuan, 
+            varian_produk.warna, 
+            varian_produk.ukuran,
+            (COALESCE(item_order.harga_khusus, produk.harga) * item_order.jumlah_order) AS subtotal
+        FROM item_order 
+        JOIN orderan ON orderan.id = item_order.id_orderan 
+        JOIN pengguna ON pengguna.id = item_order.id_pengguna 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON produk.id = varian_produk.id_produk;
+    `;
     return dbPool.query(SQLQuery);
-}
+};
+
 
 const deleteAdminVarianProduk = (id) => {
     const SQLQuery = `DELETE FROM varian_produk WHERE id = ?`;
@@ -511,10 +845,30 @@ const getPengiriman = (id_orderan) => {
 }
 
 const getFakturPembeli = (id) => {
-    const SQLQuery = `SELECT faktur.nomor_faktur, faktur.tanggal_faktur, orderan.id, pengguna.nama as nama_pengguna, pengiriman.alamat_pengiriman, produk.harga, item_order.jumlah_order, produk.nama as nama_barang, varian_produk.warna, varian_produk.ukuran FROM faktur JOIN orderan ON faktur.id_orderan = orderan.id JOIN item_order ON item_order.id_orderan = orderan.id JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id JOIN produk ON varian_produk.id_produk = produk.id JOIN pengguna ON item_order.id_pengguna = pengguna.id JOIN pengiriman ON pengiriman.id_orderan = orderan.id WHERE orderan.id = ?;
-`;
+    const SQLQuery = `
+        SELECT 
+            faktur.nomor_faktur, 
+            faktur.tanggal_faktur, 
+            orderan.id, 
+            pengguna.nama as nama_pengguna, 
+            pengiriman.alamat_pengiriman, 
+            COALESCE(item_order.harga_khusus, produk.harga) AS harga, 
+            item_order.jumlah_order, 
+            produk.nama as nama_barang, 
+            varian_produk.warna, 
+            varian_produk.ukuran 
+        FROM faktur 
+        JOIN orderan ON faktur.id_orderan = orderan.id 
+        JOIN item_order ON item_order.id_orderan = orderan.id 
+        JOIN varian_produk ON item_order.id_varian_produk = varian_produk.id 
+        JOIN produk ON varian_produk.id_produk = produk.id 
+        JOIN pengguna ON item_order.id_pengguna = pengguna.id 
+        JOIN pengiriman ON pengiriman.id_orderan = orderan.id 
+        WHERE orderan.id = ?;
+    `;
     return dbPool.query(SQLQuery, [id]);
-}
+};
+
 
 const postFakturPembeli = (id_orderan, nomor_faktur) => {
     const SQLQuery = `INSERT INTO faktur (nomor_faktur, id_orderan) VALUES (?, ?)`;
@@ -532,10 +886,24 @@ const getPembeliUlasanProduk = (id) => {
 }
 
 const getPembeliRiwayatTransaksiDetail = (id) => {
-    // Mengambil data riwayat transaksi pembeli berdasarkan id_orderan
-    const SQLQuery = `SELECT produk.id AS id_produk, varian_produk.id AS id_varian_produk, produk.nama AS nama_produk, varian_produk.warna, varian_produk.ukuran, item_order.jumlah_order AS jumlah, produk.harga, varian_produk.link_gambar_varian FROM item_order JOIN orderan ON orderan.id = item_order.id_orderan JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk JOIN produk ON produk.id = varian_produk.id_produk WHERE orderan.id = ?;`;
+    const SQLQuery = `
+      SELECT 
+        produk.id AS id_produk, 
+        varian_produk.id AS id_varian_produk, 
+        produk.nama AS nama_produk, 
+        varian_produk.warna, 
+        varian_produk.ukuran, 
+        item_order.jumlah_order AS jumlah, 
+        COALESCE(item_order.harga_khusus, produk.harga) AS harga,
+        varian_produk.link_gambar_varian
+      FROM item_order 
+      JOIN orderan ON orderan.id = item_order.id_orderan 
+      JOIN varian_produk ON varian_produk.id = item_order.id_varian_produk 
+      JOIN produk ON produk.id = varian_produk.id_produk 
+      WHERE orderan.id = ?;
+    `;
     return dbPool.query(SQLQuery, [id]);
-}
+};
 
 const getPembeliRiwayatTransaksi = (id) => {
     // Mengambil data riwayat transaksi pembeli berdasarkan id_pengguna
@@ -568,10 +936,13 @@ const postPembeliOrderProduk = (id_metode_pembayaran, total_harga) => {
     return dbPool.query(SQLQuery, [id_metode_pembayaran, total_harga]);
 }
 
-const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order) => {
-    const SQLQuery = `INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order) VALUES (?, ?, ?)`;
-    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order]);
-}
+const postPembeliTambahKeranjang = (id_pengguna, id_varian_produk, jumlah_order, harga_khusus) => {
+    const SQLQuery = `
+      INSERT INTO item_order (id_pengguna, id_varian_produk, jumlah_order, harga_khusus) 
+      VALUES (?, ?, ?, ?)
+    `;
+    return dbPool.query(SQLQuery, [id_pengguna, id_varian_produk, jumlah_order, harga_khusus]);
+};
 
 const getUsernameLogin = (username) => {
     const SQLQuery = `SELECT id, username, password, nama, email, nomor_telp, role, status FROM pengguna WHERE username = ?`;
@@ -651,6 +1022,8 @@ const updatePassword = (email, newPassword) => {
     const SQL = `UPDATE pengguna SET password=? WHERE email=?`;
     return dbPool.query(SQL, [newPassword, email]);
 };
+
+
 
 module.exports = { 
     getUsernameLogin,
@@ -770,5 +1143,16 @@ module.exports = {
     postIDOrderanLokasiPengiriman,
     getLocation, updateLocation,
     getIdOrderanDikirim, tampilSemuaProduk,
-    getItemKadaluarsa, getJumlahVerifikasiAkun
+    getItemKadaluarsa, getJumlahVerifikasiAkun,
+    getKategoriProduk,
+    getAdminTampilBiayaOperasional,
+    postAdminTambahBiayaOperasional,
+    updateAdminBiayaOperasional,
+    deleteAdminBiayaOperasional,
+    getGajiKaryawanHarian,
+    getMonthlyOnline,
+  getMonthlyOffline,
+  getTodaySummary,
+  getMonthSummary,
+    // getAdminTampilPenjualanOnlineOffline
  }

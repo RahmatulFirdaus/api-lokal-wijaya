@@ -1,5 +1,6 @@
 const dbModel = require('../model/apiModel');
 const timeMoment = require('moment-timezone');
+const dbPool = require('../config/database');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
@@ -1271,24 +1272,39 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
   
   const adminLaporanHarian = async (req, res) => {
     try {
-        // Ambil data penjualan online dan offline
+        // Ambil data penjualan online & offline
         const [onlineResults] = await dbModel.getAdminLaporanTotalHargaOnline();
         const [offlineResults] = await dbModel.getAdminLaporanTotalHargaOffline();
-        // Ambil data gaji karyawan
-        const [gajiResults] = await dbModel.getGajiKaryawan();
 
-        if (onlineResults.length === 0 && offlineResults.length === 0) {
-            return res.status(404).json({ pesan: 'Data laporan tidak ditemukan' });
+        // Ambil gaji karyawan (berdasarkan absensi hadir)
+        const [gajiResults] = await dbModel.getGajiKaryawanHarian();
+
+        // Ambil biaya operasional bulan ini
+        const [biayaResults] = await dbPool.query(`
+            SELECT biaya_toko, bensin 
+            FROM biaya_operasional 
+            WHERE bulan = DATE_FORMAT(NOW(), '%Y-%m')
+            ORDER BY created_at DESC
+            LIMIT 1
+        `);
+
+        let totalBiayaHarian = 0;
+        if (biayaResults.length > 0) {
+            const totalBulanan = parseInt(biayaResults[0].biaya_toko, 10) + parseInt(biayaResults[0].bensin, 10);
+            totalBiayaHarian = Math.round(totalBulanan / 30);
         }
 
-        // Hitung total gaji harian (total gaji dibagi 30 hari)
-        let totalGajiHarian = 0;
+        // Buat map gaji harian berdasarkan tanggal absensi
+        const gajiPerTanggal = {};
         if (gajiResults.length > 0) {
-            const totalGaji = gajiResults.reduce((sum, gaji) => sum + parseInt(gaji.gaji, 10), 0);
-            totalGajiHarian = Math.round(totalGaji / 30); // Pembulatan untuk hasil yang lebih bersih
+            gajiResults.forEach(item => {
+                const tanggal = moment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD');
+                if (!gajiPerTanggal[tanggal]) gajiPerTanggal[tanggal] = 0;
+                gajiPerTanggal[tanggal] += Math.round(item.gaji_harian);
+            });
         }
 
-        // Gabungkan hasil laporan berdasarkan tanggal
+        // Gabungkan hasil laporan per tanggal
         const laporan = [];
         let i = 0, j = 0;
 
@@ -1296,48 +1312,35 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
             const offline = offlineResults[i];
             const online = onlineResults[j];
 
-            let tanggal, total_penjualan_offline, total_penjualan_online;
+            let tanggal;
+            let total_penjualan_offline = 0, total_penjualan_online = 0;
             let keuntungan_penjualan_offline = 0, keuntungan_penjualan_online = 0;
 
             if (offline && (!online || offline.tanggal < online.tanggal)) {
                 tanggal = offline.tanggal;
-                total_penjualan_offline = offline.total_penjualan;
-                keuntungan_penjualan_offline = offline.total_keuntungan;
-                total_penjualan_online = 0;
-                keuntungan_penjualan_online = 0;
-                i++;
+                total_penjualan_offline = parseInt(offline.total_penjualan, 10);
+                keuntungan_penjualan_offline = parseInt(offline.total_keuntungan, 10);
+                j = j; i++;
             } else if (online && (!offline || online.tanggal < offline.tanggal)) {
                 tanggal = online.tanggal;
-                total_penjualan_offline = 0;
-                keuntungan_penjualan_offline = 0;
-                total_penjualan_online = online.total_harga;
-                keuntungan_penjualan_online = online.total_keuntungan;
-                j++;
+                total_penjualan_online = parseInt(online.total_harga, 10);
+                keuntungan_penjualan_online = parseInt(online.total_keuntungan, 10);
+                i = i; j++;
             } else {
                 tanggal = offline.tanggal;
-                total_penjualan_offline = offline.total_penjualan;
-                keuntungan_penjualan_offline = offline.total_keuntungan;
-                total_penjualan_online = online.total_harga;
-                keuntungan_penjualan_online = online.total_keuntungan;
-                i++;
-                j++;
+                total_penjualan_offline = parseInt(offline.total_penjualan, 10);
+                keuntungan_penjualan_offline = parseInt(offline.total_keuntungan, 10);
+                total_penjualan_online = parseInt(online.total_harga, 10);
+                keuntungan_penjualan_online = parseInt(online.total_keuntungan, 10);
+                i++; j++;
             }
 
-            // Format tanggal menggunakan moment-timezone dengan timezone Asia/Makassar
-            const formattedTanggal = timeMoment(tanggal).tz('Asia/Makassar').format('YYYY-MM-DD');
-
-            // Pastikan total penjualan offline dan online adalah angka, bukan string
-            total_penjualan_offline = parseInt(total_penjualan_offline, 10);
-            total_penjualan_online = parseInt(total_penjualan_online, 10);
-            keuntungan_penjualan_offline = parseInt(keuntungan_penjualan_offline, 10);
-            keuntungan_penjualan_online = parseInt(keuntungan_penjualan_online, 10);
-
-            // Hitung total harga harian dan total keuntungan harian
+            const formattedTanggal = moment(tanggal).tz('Asia/Makassar').format('YYYY-MM-DD');
             const total_harian = total_penjualan_offline + total_penjualan_online;
             const total_keuntungan_harian = keuntungan_penjualan_offline + keuntungan_penjualan_online;
 
-            // Hitung keuntungan bersih setelah dikurangi gaji karyawan harian
-            const keuntungan_bersih = total_keuntungan_harian - totalGajiHarian;
+            const gaji_karyawan_harian = gajiPerTanggal[formattedTanggal] || 0;
+            const keuntungan_bersih = total_keuntungan_harian - gaji_karyawan_harian - totalBiayaHarian;
 
             laporan.push({
                 tanggal: formattedTanggal,
@@ -1347,19 +1350,24 @@ const adminTampilSemuaHasilTransaksiPenjualanHarian = async (req, res) => {
                 keuntungan_penjualan_online,
                 total_harian,
                 total_keuntungan_harian,
-                gaji_karyawan_harian: totalGajiHarian,
+                gaji_karyawan_harian,
+                biaya_operasional_harian: totalBiayaHarian,
                 keuntungan_bersih
             });
         }
 
+        if (laporan.length === 0) {
+            return res.status(404).json({ pesan: "Data laporan tidak ditemukan" });
+        }
+
         return res.status(200).json({
-            pesan: 'Data laporan berhasil diambil',
+            pesan: "Data laporan berhasil diambil",
             data: laporan
         });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ pesan: 'Internal server error' });
+        console.error("Error adminLaporanHarian:", error);
+        return res.status(500).json({ pesan: "Internal server error" });
     }
 };
 
@@ -1630,11 +1638,24 @@ const adminTampilUlasanProduk = async (req, res) => {
 //fungsi untuk menampilkan data produk yang harus di restok oleh admin
 const adminTampilProdukPerluRestok = async (req, res) => {
     try {
-        const [data] = await dbModel.getAdminTampilProdukPerluRestok();
+        const { kategori } = req.query; // Ambil kategori dari query parameter
+        
+        const [data] = await dbModel.getAdminTampilProdukPerluRestok(kategori);
+        const [kategoriesList] = await dbModel.getKategoriProduk();
+        
         if (data.length === 0) {
-            return res.status(404).json({ pesan: 'Data produk tidak ditemukan' });
+            return res.status(200).json({ 
+                pesan: 'Data produk tidak ditemukan', 
+                data: [], 
+                kategori: kategoriesList 
+            });
         }
-        return res.status(200).json({ pesan: 'Data produk berhasil diambil', data: data });
+        
+        return res.status(200).json({ 
+            pesan: 'Data produk berhasil diambil', 
+            data: data,
+            kategori: kategoriesList
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -2189,40 +2210,30 @@ const adminTampilKeranjang = async (req, res) => {
 const adminTambahKeranjang = async (req, res) => {
     try {
         const id = req.params.id; 
-        const { id_varian_produk, jumlah_order } = req.body;
-
-        console.log("ID Pengguna:", id);
-        console.log("ID Varian Produk:", id_varian_produk); 
-        console.log("Jumlah Order:", jumlah_order);
+        const { id_varian_produk, jumlah_order, harga_khusus } = req.body;
 
         if (!id || !id_varian_produk || !jumlah_order) {
             return res.status(400).json({ pesan: 'Harap Mengisikan Data dengan Lengkap' });
         }
 
-        // Ambil stok saat ini dari database
+        // Cek stok
         const [stokRows] = await dbModel.getStokVarianProduk(id_varian_produk);
-
-        console.log("Stok Rows:", stokRows);
-
         if (stokRows.length === 0) {
             return res.status(404).json({ pesan: 'Varian produk tidak ditemukan' });
         }
-
-        
-
         const stokSaatIni = stokRows[0].stok;
-
-        // Cek apakah stok cukup
         if (stokSaatIni < jumlah_order) {
             return res.status(400).json({ pesan: `Stok tidak mencukupi. Stok saat ini: ${stokSaatIni}` });
         }
 
-        // Simpan ke keranjang dan kurangi stok
-        await dbModel.postPembeliTambahKeranjang(id, id_varian_produk, jumlah_order);
+        // Insert dengan harga_khusus
+        await dbModel.postPembeliTambahKeranjang(id, id_varian_produk, jumlah_order, harga_khusus);
+        console.log('harga khusus', harga_khusus);
+
+        // Update stok
         await dbModel.updateStokVarianProduk(id_varian_produk, jumlah_order);
 
         return res.status(201).json({ pesan: 'Produk berhasil ditambahkan ke keranjang' });
-
     } catch (error) {
         console.error(error);
         return res.status(500).json({ pesan: 'Internal server error' });
@@ -2408,9 +2419,289 @@ const sendOtpEmail = (to, otp) => {
     return transporter.sendMail(mailOptions);
 };
 
+const adminTampilBiayaOperasional = async (req, res) => {
+    try {
+        const [results] = await dbModel.getAdminTampilBiayaOperasional();
+        res.status(200).json({
+            pesan: "Data berhasil diambil",
+            data: results
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+const adminTambahBiayaOperasional = async (req, res) => {
+    try {
+        const { biaya_toko, bensin, bulan } = req.body;
+        if (!biaya_toko || !bensin || !bulan) {
+            return res.status(400).json({ pesan: "Data tidak lengkap" });
+        }
+        await dbModel.postAdminTambahBiayaOperasional(biaya_toko, bensin, bulan);
+        res.status(201).json({ pesan: "Biaya operasional berhasil ditambahkan" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+const adminUpdateBiayaOperasional = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { biaya_toko, bensin, bulan } = req.body;
+        if (!biaya_toko || !bensin || !bulan) {
+            return res.status(400).json({ pesan: "Data tidak lengkap" });
+        }
+        await dbModel.updateAdminBiayaOperasional(id, biaya_toko, bensin, bulan);
+        res.status(200).json({ pesan: "Biaya operasional berhasil diupdate" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+const adminDeleteBiayaOperasional = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await dbModel.deleteAdminBiayaOperasional(id);
+        res.status(200).json({ pesan: "Biaya operasional berhasil dihapus" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ pesan: "Terjadi kesalahan server" });
+    }
+};
+
+// const adminTampilPenjualanOnlineOffline = async (req, res) => {
+//     try {
+//         const [rows] = await dbModel.getAdminTampilPenjualanOnlineOffline();
+
+//         if (rows.length === 0) {
+//             return res.status(404).json({ pesan: 'Data penjualan tidak ditemukan' });
+//         }
+
+//         return res.status(200).json({
+//             pesan: 'Data penjualan online & offline berhasil diambil',
+//             data: rows
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ pesan: 'Internal server error' });
+//     }
+// };
+
+// helper: list bulan dari start..end (YYYY-MM)
+function monthRange(startYm, endYm) {
+  const arr = [];
+  let cur = moment.tz(startYm + '-01', 'YYYY-MM-DD', 'Asia/Makassar');
+  const end = moment.tz(endYm + '-01', 'YYYY-MM-DD', 'Asia/Makassar');
+  while (cur.isSameOrBefore(end, 'month')) {
+    arr.push(cur.format('YYYY-MM'));
+    cur = cur.add(1, 'month');
+  }
+  return arr;
+}
+
+// helper: linear regression sederhana y ~ a + b*t
+function simpleLinearForecast(values, stepsForward) {
+  // values: array angka (historical)
+  const n = values.length;
+  if (n === 0) return Array(stepsForward).fill(0);
+  const xs = Array.from({ length: n }, (_, i) => i);
+  const sumX = xs.reduce((a,b)=>a+b,0);
+  const sumY = values.reduce((a,b)=>a+b,0);
+  const sumXY = xs.reduce((a,i)=>a + i*values[i],0);
+  const sumX2 = xs.reduce((a,i)=>a + i*i,0);
+  const denom = (n*sumX2 - sumX*sumX) || 1;
+  const b = (n*sumXY - sumX*sumY) / denom;
+  const a = (sumY - b*sumX) / n;
+
+  const lastIndex = n - 1;
+  const preds = [];
+  for (let k=1; k<=stepsForward; k++) {
+    const t = lastIndex + k;
+    const y = a + b*t;
+    preds.push(Math.max(0, Math.round(y))); // tidak negatif
+  }
+  return preds;
+}
+
+// GET /api/adminDashboardSummary
+const adminDashboardSummary = async (req, res) => {
+  try {
+    // Ambil data online & offline (hari ini saja)
+    const [onlineResults] = await dbModel.getAdminLaporanTotalHargaOnline();
+    const [offlineResults] = await dbModel.getAdminLaporanTotalHargaOffline();
+    const [gajiResults] = await dbModel.getGajiKaryawanHarian();
+
+    // Ambil biaya operasional bulan ini
+    const [biayaResults] = await dbPool.query(`
+      SELECT biaya_toko, bensin 
+      FROM biaya_operasional 
+      WHERE bulan = DATE_FORMAT(NOW(), '%Y-%m')
+      ORDER BY created_at DESC
+      LIMIT 1
+    `);
+
+    let totalBiayaHarian = 0;
+    if (biayaResults.length > 0) {
+      const totalBulanan = parseInt(biayaResults[0].biaya_toko, 10) + parseInt(biayaResults[0].bensin, 10);
+      totalBiayaHarian = Math.round(totalBulanan / 30);
+    }
+
+    // Hitung gaji karyawan per tanggal
+    const gajiPerTanggal = {};
+    if (gajiResults.length > 0) {
+      gajiResults.forEach(item => {
+        const tanggal = moment(item.tanggal).tz('Asia/Makassar').format('YYYY-MM-DD');
+        if (!gajiPerTanggal[tanggal]) gajiPerTanggal[tanggal] = 0;
+        gajiPerTanggal[tanggal] += Math.round(item.gaji_harian);
+      });
+    }
+
+    // --- TODAY ---
+    const todayStr = moment().tz('Asia/Makassar').format('YYYY-MM-DD');
+    let todayOnline = onlineResults.find(r => moment(r.tanggal).format('YYYY-MM-DD') === todayStr);
+    let todayOffline = offlineResults.find(r => moment(r.tanggal).format('YYYY-MM-DD') === todayStr);
+
+    const totalTodayOmzet =
+      (todayOnline ? parseInt(todayOnline.total_harga, 10) : 0) +
+      (todayOffline ? parseInt(todayOffline.total_penjualan, 10) : 0);
+
+    const totalTodayProfit =
+      (todayOnline ? parseInt(todayOnline.total_keuntungan, 10) : 0) +
+      (todayOffline ? parseInt(todayOffline.total_keuntungan, 10) : 0);
+
+    const gajiHariIni = gajiPerTanggal[todayStr] || 0;
+    const keuntunganBersihHariIni = totalTodayProfit - gajiHariIni - totalBiayaHarian;
+
+    // --- THIS MONTH ---
+    const monthStr = moment().tz('Asia/Makassar').format('YYYY-MM');
+    let totalMonthOmzet = 0;
+    let totalMonthProfit = 0;
+
+    onlineResults.forEach(o => {
+      if (moment(o.tanggal).format('YYYY-MM') === monthStr) {
+        totalMonthOmzet += parseInt(o.total_harga, 10);
+        totalMonthProfit += parseInt(o.total_keuntungan, 10);
+      }
+    });
+
+    offlineResults.forEach(of => {
+      if (moment(of.tanggal).format('YYYY-MM') === monthStr) {
+        totalMonthOmzet += parseInt(of.total_penjualan, 10);
+        totalMonthProfit += parseInt(of.total_keuntungan, 10);
+      }
+    });
+
+    // total gaji karyawan bulan ini
+    let totalGajiBulan = 0;
+    Object.keys(gajiPerTanggal).forEach(tgl => {
+      if (tgl.startsWith(monthStr)) {
+        totalGajiBulan += gajiPerTanggal[tgl];
+      }
+    });
+
+    // total biaya operasional bulan ini
+    const totalBiayaBulan = totalBiayaHarian * 30;
+
+    const keuntunganBersihBulan = totalMonthProfit - totalGajiBulan - totalBiayaBulan;
+
+    // --- RESPONSE ---
+    return res.status(200).json({
+      pesan: "Data dashboard berhasil diambil",
+      data: {
+        today: {
+          omzet: totalTodayOmzet,
+          profit: keuntunganBersihHariIni
+        },
+        thisMonth: {
+          omzet: totalMonthOmzet,
+          profit: keuntunganBersihBulan
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error adminDashboardSummary:", error);
+    return res.status(500).json({ pesan: "Internal server error" });
+  }
+};
+
+// GET /api/adminGrafikPenjualan?years_back=3&years_forward=2
+const adminGrafikPenjualan = async (req, res) => {
+  try {
+    const yearsBack = Number(req.query.years_back || 3);
+    const yearsFwd  = Number(req.query.years_forward || 2);
+
+    const endYm = moment.tz('Asia/Makassar').format('YYYY-MM');
+    const startYm = moment.tz('Asia/Makassar').subtract(yearsBack, 'years').format('YYYY-MM');
+
+    const [onlineRows]  = await dbModel.getMonthlyOnline();
+    const [offlineRows] = await dbModel.getMonthlyOffline();
+
+    // Map data ke {ym: {online, offline, profit_online, profit_offline}}
+    const map = {};
+    onlineRows.forEach(r=>{
+      const ym = r.ym;
+      map[ym] = map[ym] || { online:0, offline:0, profit_online:0, profit_offline:0 };
+      map[ym].online += Number(r.omzet_online || 0);
+      map[ym].profit_online += Number(r.profit_online || 0);
+    });
+    offlineRows.forEach(r=>{
+      const ym = r.ym;
+      map[ym] = map[ym] || { online:0, offline:0, profit_online:0, profit_offline:0 };
+      map[ym].offline += Number(r.omzet_offline || 0);
+      map[ym].profit_offline += Number(r.profit_offline || 0);
+    });
+
+    // Build historical array (lengkap per bulan)
+    const histMonths = monthRange(startYm, endYm);
+    const historical = histMonths.map(ym=>{
+      const m = map[ym] || { online:0, offline:0, profit_online:0, profit_offline:0 };
+      const total = m.online + m.offline;
+      const profit = m.profit_online + m.profit_offline;
+      return { ym, online:m.online, offline:m.offline, total, profit, forecast:false };
+    });
+
+    // Forecast 2 tahun (24 bulan) berdasarkan total omzet
+    const histTotals = historical.map(d=>d.total);
+    const preds = simpleLinearForecast(histTotals, yearsFwd*12);
+
+    let cur = moment.tz(endYm + '-01','YYYY-MM-DD','Asia/Makassar');
+    const forecast = [];
+    for (let i=0;i<preds.length;i++){
+      cur = cur.add(1,'month');
+      const ym = cur.format('YYYY-MM');
+      forecast.push({
+        ym, online: null, offline: null,
+        total: preds[i], profit: null, forecast: true
+      });
+    }
+
+    res.json({
+      pesan: 'OK',
+      data: {
+        startYm, endYm,
+        historical,
+        forecast
+      }
+    });
+  } catch (e) {
+    console.error('adminGrafikPenjualan', e);
+    res.status(500).json({ pesan: 'Internal server error' });
+  }
+};
+
 
 
 module.exports = {
+    adminDashboardSummary,
+  adminGrafikPenjualan,
+    adminTampilBiayaOperasional,
+    adminTambahBiayaOperasional,
+    adminUpdateBiayaOperasional,
+    adminDeleteBiayaOperasional,
     login,
     resetPassword,
     forgotPassword,
@@ -2494,5 +2785,6 @@ module.exports = {
     getLocation, updateLocation,
     getIDOrderan,
     tampilSemuaProduk, hapusItemKeranjangKadaluarsa,
-    adminTampilJumlahVerifikasiAkun
+    adminTampilJumlahVerifikasiAkun,
+    // adminTampilPenjualanOnlineOffline
 }

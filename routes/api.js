@@ -167,6 +167,21 @@ router.get ('/getIDOrderan', apiController.getIDOrderan); //id diisi dengan id p
 //khusus untuk mengetahui jumlah verifikasi akun
 router.get('/adminTampilJumlahVerifikasiAkun', apiController.adminTampilJumlahVerifikasiAkun);
 
+//router CRUD get post patch delete khusus biaya operasional
+router.get('/adminTampilBiayaOperasional', apiController.adminTampilBiayaOperasional);
+router.post('/adminTambahBiayaOperasional', apiController.adminTambahBiayaOperasional);
+router.patch('/adminUpdateBiayaOperasional/:id', apiController.adminUpdateBiayaOperasional);
+router.delete('/adminDeleteBiayaOperasional/:id', apiController.adminDeleteBiayaOperasional);
+
+//router get untuk menampilkan data penjualan online dan offline dalam 3 tahun sekarang dan kebelakang
+// router.get('/adminTampilPenjualanOnlineOffline', apiController.adminTampilPenjualanOnlineOffline);
+
+// Ringkasan dashboard
+router.get('/adminDashboardSummary', apiController.adminDashboardSummary);
+
+// Grafik penjualan (3y back + 2y forward default)
+router.get('/adminGrafikPenjualan', apiController.adminGrafikPenjualan);
+
 
 //REVISI
 router.post('/forgot-password', apiController.forgotPassword);
